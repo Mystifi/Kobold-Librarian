@@ -102,7 +102,7 @@ class Client {
 
 							this.send('', `/trn ${config.username},0,${body.assertion}`);
 						} else {
-							utils.errorMsg(`Something went wrong logging in. Assertion: ${body.assertion}. Exiting.`);
+							utils.errorMsg(`Something went wrong logging in. Assertion: ${body.assertion.slice(2)} Exiting.`);
 							process.exit(1);
 						}
 					} else {
