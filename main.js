@@ -45,5 +45,7 @@ try {
 	process.exit(0);
 }
 
+// Initialise the databases.
+require('./storage');
 // Start the client.
 require('./client');
