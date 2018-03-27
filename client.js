@@ -75,7 +75,7 @@ class Client {
 	parse(message) {
 		if (!message) return;
 		let split = message.split('|');
-		let roomid = utils.toId(split[0]);
+		let roomid = utils.toRoomId(split[0]);
 
 		let userid = utils.toId(config.username);
 
@@ -149,19 +149,19 @@ class Client {
 		case 'pm':
 			if (utils.toId(split[2]) === userid) return false;
 
-			this.parseMessage(utils.toId(split[2]), null, split.slice(4).join('|'));
+			this.parseMessage(utils.toId(split[2]), null, split.slice(4).join('|')).catch(e => utils.errorMsg(e));
 
 			break;
 		case 'c':
 			if (utils.toId(split[2]) === userid) return false;
 
-			this.parseMessage(utils.toId(split[2]), roomid, split.slice(3).join('|'));
+			this.parseMessage(utils.toId(split[2]), roomid, split.slice(3).join('|')).catch(e => utils.errorMsg(e));
 
 			break;
 		case 'c:':
 			if (utils.toId(split[3]) === userid) return false;
 
-			this.parseMessage(utils.toId(split[3]), roomid, split.slice(4).join('|'));
+			this.parseMessage(utils.toId(split[3]), roomid, split.slice(4).join('|')).catch(e => utils.errorMsg(e));
 
 			break;
 		}
@@ -189,6 +189,7 @@ class Client {
 					}
 				}
 			});
+
 
 	}
 

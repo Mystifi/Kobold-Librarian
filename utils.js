@@ -35,6 +35,6 @@ module.exports = {
 		this.output('ERROR'.red, text);
 	},
 	pmMsg(text) {
-		this.output('PM'.blue, text);
+		this.output('PM'.cyan, text);
 	},
 };
