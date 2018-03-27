@@ -19,7 +19,6 @@ const BACKUP_INTERVAL = 60 * 60 * 1000;
 class Storage {
 	constructor() {
 		this._storage = {};
-		this.globalStorage = {};
                 this.frozenKeys = new Set();
 		this.backupInterval = setInterval(() => this.exportStorage(), BACKUP_INTERVAL);
 
