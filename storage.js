@@ -2,7 +2,7 @@
  * Storage
  * Cassius - https://github.com/sirDonovan/Cassius
  *
- * This file handles the storage of room databases.
+ * This file handles the storage for the bot.
  *
  * Modified from Cassius's Storage module to best fit The Scribe's needs.
  *
