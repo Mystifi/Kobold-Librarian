@@ -11,7 +11,8 @@ const connect = require('connect');
 const serveStatic = require('serve-static');
 const bodyParser = require('body-parser');
 
-const config = require('./config.js');
+const config = require('./config');
+const utils = require('./utils');
 
 class Server {
 	constructor(host, port) {
@@ -30,7 +31,7 @@ class Server {
 
 		this.init();
 
-		console.log(`Webserver started successfully using ${this.protocol} on port ${port}.`);
+		utils.statusMsg(`Webserver started successfully using ${this.protocol} on port ${port}.`);
 	}
 
 	// Returns either the HTTP or the HTTPS module depending on whether or not
@@ -67,7 +68,7 @@ class Server {
 				cert: config.sslCert,
 				ca: config.sslCa,
 			};
-			if (!(opts.key && opts.cert && opts.ca)) return console.log(`In order to use https, valid SSL information must be provided in the config. The webserver couldn't be started.`);
+			if (!(opts.key && opts.cert && opts.ca)) return utils.errorMsg(`In order to use https, valid SSL information must be provided in the config. The webserver couldn't be started.`);
 
 			if (!this.httpApp) {
 				this.httpApp = connect();
