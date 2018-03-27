@@ -1,21 +1,22 @@
 {
-        "name": "The-Scribe",
+        "name": "the-scribe",
         "version": "0.0.1",
         "description": "An improved version of The Scribe, a PS! bot for Writing and Canalave Library.",
         "license": "MIT",
-        "contributors": [{
-                "name": "Isaac Bruce",
-                "email": "isaacrbruce@gmail.com"
-        }, {
-                "name": "Bär Halberkamp",
-                "email": "fledaway@gmail.com"
-        }],
+        "contributors": [
+                {
+                        "name": "Isaac Bruce",
+                        "email": "isaacrbruce@gmail.com"
+                },
+                {
+                        "name": "Bär Halberkamp",
+                        "email": "bumba@pokemonshowdown.com"
+                }
+        ],
         "dependencies": {
                 "body-parser": "^1.15.2",
-                "cheerio": "0.20.0",
-                "colors": "1.1.2",
+                "colors": "^1.1.2",
                 "connect": "3.4.1",
-                "handlebars": "^4.0.6",
                 "request": "2.67.0",
                 "serve-static": "1.10.2",
                 "websocket": "^1.0.22"
