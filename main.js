@@ -6,12 +6,6 @@
 
 const fs = require('fs');
 
-// Inject the colour methods into String.prototype.
-require('colors');
-
-process.on('uncaughtException', err => console.log(err.stack));
-process.on('unhandledRejection', err => console.log(err.stack));
-
 // Checks whether node.js version is sufficient and whether all dependencies are installed. Based on code from Zarel/Pokemon-Showdown.
 try {
 	eval('{ let a = async () => {}; }');
@@ -26,20 +20,29 @@ try {
 	require.resolve('connect');
 	require.resolve('serve-static');
 	require.resolve('body-parser');
+	require.resolve('colors');
 } catch (e) {
 	console.log(`Not all dependencies are installed. Please run 'npm install' before running the bot.`);
 	process.exit(0);
 }
+
+// Inject the colour methods into String.prototype.
+require('colors');
+
+const utils = require('./utils');
+
+process.on('uncaughtException', err => utils.errorMsg(err.stack));
+process.on('unhandledRejection', err => utils.errorMsg(err.stack));
 
 // Check if the config is renamed properly. Based on code from sirDonovan/Cassius.
 try {
 	fs.accessSync('./config.js');
 } catch (e) {
 	if (e.code !== 'ENOENT') throw e;
-	console.log(`No config.js file found. Please edit the example config to configure The Scribe.`);
+	utils.errorMsg(`No config.js file found. Please edit the example config to configure The Scribe.`);
 	fs.writeFileSync('./config.js', fs.readFileSync('./config-example.js'));
 	process.exit(0);
 }
 
 // Start the client.
-require('./client.js');
+require('./client');
