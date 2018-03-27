@@ -6,6 +6,9 @@
 
 const fs = require('fs');
 
+// Inject the colour methods into String.prototype.
+require('colors');
+
 process.on('uncaughtException', err => console.log(err.stack));
 process.on('unhandledRejection', err => console.log(err.stack));
 
@@ -22,7 +25,7 @@ try {
 	require.resolve('websocket');
 	require.resolve('connect');
 	require.resolve('serve-static');
-	require.resolve('body-parser');	
+	require.resolve('body-parser');
 } catch (e) {
 	console.log(`Not all dependencies are installed. Please run 'npm install' before running the bot.`);
 	process.exit(0);

@@ -1,0 +1,35 @@
+{
+        "name": "The-Scribe",
+        "version": "0.0.1",
+        "description": "An improved version of The Scribe, a PS! bot for Writing and Canalave Library.",
+        "license": "MIT",
+        "contributors": [{
+                "name": "Isaac Bruce",
+                "email": "isaacrbruce@gmail.com"
+        }, {
+                "name": "Bär Halberkamp",
+                "email": "fledaway@gmail.com"
+        }],
+        "dependencies": {
+                "body-parser": "^1.15.2",
+                "cheerio": "0.20.0",
+                "colors": "1.1.2",
+                "connect": "3.4.1",
+                "handlebars": "^4.0.6",
+                "request": "2.67.0",
+                "serve-static": "1.10.2",
+                "websocket": "^1.0.22"
+        },
+        "engines": {
+                "node": ">=7.7.0"
+        },
+        "private": true,
+        "bin": "./main.js",
+        "scripts": {
+                "start": "node main.js"
+        },
+        "repository": {
+                "type": "git",
+                "url": "https://github.com/Mystifi/The-Scribe.git"
+        }
+}

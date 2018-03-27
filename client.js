@@ -5,12 +5,33 @@
  */
 
 const WebSocketClient = require('websocket').client;
+const fs = require('fs');
+const request = require('request');
 
-const config = require('./config.js');
-const utils = require('./utils.js');
+const config = require('./config');
+const utils = require('./utils');
 
 const BASE_RECONNECT_TIME = 2;
 const ACTION_URL = 'http://play.pokemonshowdown.com/action.php';
+
+class CommandWrapper {
+	constructor(send, commands, userlists) {
+		this.send = send;
+		this.commands = commands;
+		this.userlists = userlists;
+	}
+
+	sendPM(userid, message) {
+		this.send(`/pm ${userid}, ${message}`);
+	}
+
+	async run(commandName, userid, roomid, message) {
+		let command = this.commands.get(commandName);
+		command.apply(this, [userid, roomid, message]).catch(e => {
+			utils.errorMsg(`An error occurred within the ${commandName} command: ${e.stack}`);
+		});
+	}
+}
 
 class Client {
 	constructor(url) {
@@ -24,17 +45,17 @@ class Client {
 
 		this.client.on('connectFailed', error => {
 			this.reconnects++;
-			console.log(`Connection failed with error: ${error}. Retrying in ${BASE_RECONNECT_TIME ** this.reconnects} seconds.`);
+			utils.errorMsg(`Connection failed with error: ${error}. Retrying in ${BASE_RECONNECT_TIME ** this.reconnects} seconds.`);
 			setTimeout(this.connect, (BASE_RECONNECT_TIME ** this.reconnects) * 1000);
 		});
 
 		this.client.on('connect', connection => {
 			this.connection = connection;
 			this.reconnects = 0;
-			console.log('WebSocket Client Connected successfully.');
+			utils.statusMsg('WebSocket Client connected successfully.');
 			connection.on('close', () => {
 				this.reconnects++;
-				console.log(`Connection closed. Reconnecting in ${BASE_RECONNECT_TIME ** this.reconnects} seconds.`);
+				utils.errorMsg(`Connection closed. Reconnecting in ${BASE_RECONNECT_TIME ** this.reconnects} seconds.`);
 				setTimeout(this.connect, (BASE_RECONNECT_TIME ** this.reconnects) * 1000);
 			});
 			connection.on('message', message => {
@@ -47,7 +68,7 @@ class Client {
 	}
 
 	connect() {
-		console.log(`Attempting to connect to ${this.url}...`);
+		utils.statusMsg(`Attempting to connect to ${this.url}...`);
 		this.client.connect(this.url);
 	}
 
@@ -55,6 +76,9 @@ class Client {
 		if (!message) return;
 		let split = message.split('|');
 		let roomid = utils.toId(split[0]);
+
+		let userid = utils.toId(config.username);
+
 		switch (split[1]) {
 		case 'challstr':
 			let challstr = split.slice(2).join('|');
@@ -70,7 +94,7 @@ class Client {
 						try {
 							body = JSON.parse(body.substr(1));
 						} catch (e) {
-							console.log(`Invalid JSON response from server: ${body}. Exiting.`);
+							utils.errorMsg(`Invalid JSON response from server: ${body}. Exiting.`);
 							process.exit(1);
 						}
 						if (body.assertion && body.assertion[0] !== ';') {
@@ -78,20 +102,20 @@ class Client {
 
 							this.send('', `/trn ${config.username},0,${body.assertion}`);
 						} else {
-							console.log(`Something went wrong logging in. Assertion: ${body.assertion}. Exiting.`);
+							utils.errorMsg(`Something went wrong logging in. Assertion: ${body.assertion}. Exiting.`);
 							process.exit(1);
 						}
 					} else {
-						console.log(`Something went wrong with a request (status code ${response.statusCode})${error ? `: ${error}` : ''}. Exiting.`);
+						utils.errorMsg(`Something went wrong with a request (status code ${response.statusCode})${error ? `: ${error}` : ''}. Exiting.`);
 						process.exit(1);
 					}
 				}
 			});
 			break;
 		case 'updateuser':
-			if (split[2] !== config.username) return false;
+			if (utils.toId(split[2]) !== userid) return false;
 
-			console.log(`Successfully set up and logged in as ${split[2]}`);
+			utils.statusMsg(`Successfully set up and logged in as ${split[2]}.`);
 			break;
 		case 'J':
 		case 'j':
@@ -109,11 +133,11 @@ class Client {
 			} else {
 				this.userlists[roomid] = {}; // paranoia again.
 			}
-			this.userlists[roomid][utils.toId(split[2])] = [split[2][0], split[2].slice(1)];			
+			this.userlists[roomid][utils.toId(split[2])] = [split[2][0], split[2].slice(1)];
 			break;
 		case 'noinit':
 		case 'deinit':
-			console.log(`Attempted to join the room '${roomid}', but failed to do so.`);
+			utils.errorMsg(`Attempted to join the room '${roomid}', but failed to do so.`);
 			break;
 		case 'init':
 			let list = {};
@@ -123,19 +147,22 @@ class Client {
 			this.userlists[roomid] = list;
 			break;
 		case 'pm':
-			if (split[2] === config.username) return false;
+			if (utils.toId(split[2]) === userid) return false;
 
-			// TODO: parse commands
+			this.parseMessage(utils.toId(split[2]), null, split.slice(4).join('|'));
+
 			break;
 		case 'c':
-			if (split[2] === config.username) return false;
-		
-			// TODO: parse commands
+			if (utils.toId(split[2]) === userid) return false;
+
+			this.parseMessage(utils.toId(split[2]), roomid, split.slice(3).join('|'));
+
 			break;
 		case 'c:':
-			if (split[3] === config.username) return false;
+			if (utils.toId(split[3]) === userid) return false;
 
-			// TODO: parse commands
+			this.parseMessage(utils.toId(split[3]), roomid, split.slice(4).join('|'));
+
 			break;
 		}
 	}
@@ -144,27 +171,64 @@ class Client {
 		this.send('', `/avatar ${config.avatar}`);
 		this.send('', `/autojoin ${config.rooms.join(',')}`);
 
-		let core = require('./core-commands.js');
+		let core = require('./core-commands');
 
 		for (let c in core) {
 			this.commands.set(c, core[c]);
 		}
 
+
 		fs.readdirSync('./plugins')
-		.filter((file) => file.endsWith('.js'))
-		.forEach((file) => {
-			let plugin = require(`./plugins/${file}`);
-			
-			if (plugin.commands) {
-				for (let c in plugin.commands) {
-					this.commands.set(c, plugin.commands[c]);
+			.filter(file => file.endsWith('.js'))
+			.forEach(file => {
+				let plugin = require(`./plugins/${file}`);
+
+				if (plugin.commands) {
+					for (let c in plugin.commands) {
+						this.commands.set(c, plugin.commands[c]);
+					}
 				}
-			}
-		});
+			});
+
 	}
 
 	send(room, message) {
 		return this.connection.send(`${room}|${message}`);
+	}
+
+	sendPM(userid, message) {
+		return this.connection.send(`|/pm ${userid}, ${message}`);
+	}
+
+	// For the moment, this only handles parsing incoming command messages.
+	async parseMessage(userid, roomid, message) {
+		if (!message.startsWith(config.commandToken)) {
+			if (!roomid) {
+				this.sendPM(userid, "Hi, I'm only a bot. Please PM another staff member for assistance.");
+				utils.pmMsg(`PM received from ${userid}: ${message}`);
+			}
+			return;
+		};
+		let [commandName, ...words] = message.slice(config.commandToken.length).split(' ');
+
+		if (!this.commands.has(commandName)) {
+			if (!roomid) this.sendPM(userid, "Invalid command.");
+			return;
+		}
+
+		// The closure allows us to optionally specify an alternate room
+		// to send to. If we only specify a message, then it will either
+		// default to either the room it was sent to or the sender's PMs.
+		let send = (message, room = roomid) => {
+			if (room) {
+				this.send(room, message);
+			} else {
+				this.sendPM(userid, message);
+			}
+		};
+		let wrapper = new CommandWrapper(send, this.commands, this.userlists);
+
+		await wrapper.run(commandName, userid, roomid, words.join(' '));
 	}
 }
 
