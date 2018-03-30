@@ -13,12 +13,18 @@ const utils = require('./utils');
 
 const BASE_RECONNECT_TIME = 2;
 const ACTION_URL = 'http://play.pokemonshowdown.com/action.php';
+const RANKS = ['+', '%', '@', '*', '#', '&', '~'];
 
 class CommandWrapper {
-	constructor(send, commands, userlists) {
+	constructor(rank, send, commands, userlists) {
+		this.rank = rank;
 		this.send = send;
 		this.commands = commands;
 		this.userlists = userlists;
+	}
+
+	hasPerms(rank) {
+		return RANKS.indexOf(this.rank) >= RANKS.indexOf(rank);
 	}
 
 	sendPM(userid, message) {
@@ -26,6 +32,7 @@ class CommandWrapper {
 	}
 
 	async run(commandName, userid, roomid, message) {
+		if (config.owners.includes(userid)) this.rank = '~'; // There might be a more elegant way to do it. Can't think of it rn however.
 		let command = this.commands.get(commandName);
 		command.apply(this, [userid, roomid, message]).catch(e => {
 			utils.errorMsg(`An error occurred within the ${commandName} command: ${e.stack}`);
@@ -149,19 +156,19 @@ class Client {
 		case 'pm':
 			if (utils.toId(split[2]) === userid) return false;
 
-			this.parseMessage(utils.toId(split[2]), null, split.slice(4).join('|')).catch(e => utils.errorMsg(e));
+			this.parseMessage(split[2], null, split.slice(4).join('|').trim()).catch(e => utils.errorMsg(e));
 
 			break;
 		case 'c':
 			if (utils.toId(split[2]) === userid) return false;
 
-			this.parseMessage(utils.toId(split[2]), roomid, split.slice(3).join('|')).catch(e => utils.errorMsg(e));
+			this.parseMessage(split[2], roomid, split.slice(3).join('|').trim()).catch(e => utils.errorMsg(e));
 
 			break;
 		case 'c:':
 			if (utils.toId(split[3]) === userid) return false;
 
-			this.parseMessage(utils.toId(split[3]), roomid, split.slice(4).join('|')).catch(e => utils.errorMsg(e));
+			this.parseMessage(split[3], roomid, split.slice(4).join('|').trim()).catch(e => utils.errorMsg(e));
 
 			break;
 		}
@@ -189,8 +196,6 @@ class Client {
 					}
 				}
 			});
-
-
 	}
 
 	send(room, message) {
@@ -202,14 +207,16 @@ class Client {
 	}
 
 	// For the moment, this only handles parsing incoming command messages.
-	async parseMessage(userid, roomid, message) {
+	async parseMessage(user, roomid, message) {
+		let rank = user[0];
+		let userid = utils.toId(user);
 		if (!message.startsWith(config.commandToken)) {
 			if (!roomid) {
 				this.sendPM(userid, "Hi, I'm only a bot. Please PM another staff member for assistance.");
 				utils.pmMsg(`PM received from ${userid}: ${message}`);
 			}
 			return;
-		};
+		}
 		let [commandName, ...words] = message.slice(config.commandToken.length).split(' ');
 
 		if (!this.commands.has(commandName)) {
@@ -227,7 +234,7 @@ class Client {
 				this.sendPM(userid, message);
 			}
 		};
-		let wrapper = new CommandWrapper(send, this.commands, this.userlists);
+		let wrapper = new CommandWrapper(rank, send, this.commands, this.userlists);
 
 		await wrapper.run(commandName, userid, roomid, words.join(' '));
 	}

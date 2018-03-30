@@ -15,7 +15,7 @@ module.exports = {
 		return str.toLowerCase().replace(/[^a-z0-9]/g, '');
 	},
 	toRoomId(str) {
-		return str.toLowerCase().replace(/[^a-z0-9-]/g, '');
+		return str.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
 	},
 	timestamp() {
 		let date = new Date();
