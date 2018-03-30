@@ -11,7 +11,7 @@ module.exports = {
 	// Based on the eval function in Kid A.
 	async eval(userid, roomid, message) {
 		if (!config.owners.includes(userid)) return this.send(`You need to be listed as a bot owner to use this command.`);
-		if(/require\(.+?\)/.test(message)) return this.send(`You are not allowed to use \`\`require()\`\` when using eval.`);
+		if (/require\(.+?\)/.test(message)) return this.send("You are not allowed to use ``require()`` when using eval.");
 
 		let ret;
 		try {

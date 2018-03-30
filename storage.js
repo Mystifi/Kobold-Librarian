@@ -28,9 +28,9 @@ class Storage {
 
 	importJSON(key) {
 		let file = '{}';
-		fs.readFile(`./storage/${key}.json`, (e, data) => {
+		fs.readFile(`./data/${key}.json`, (e, data) => {
 			if (e) {
-				utils.errorMsg(`Error reading from './storage/${key}.json': ${e.stack}`);
+				utils.errorMsg(`Error reading from './data/${key}.json': ${e.stack}`);
 				utils.errorMsg("The file will be marked as frozen; saved data will not be overwritten.");
 				this.frozenKeys.add(key);
 			} else {
@@ -44,11 +44,11 @@ class Storage {
 		if (!(key in this._storage)) return;
 		let frozen = this.frozenKeys.has(key);
 		if (frozen) {
-			utils.errorMsg(`The file './storage/${key}.json' is marked as frozen; it will be saved to './storage/${key}.temp.json' instead.`);
+			utils.errorMsg(`The file './data/${key}.json' is marked as frozen; it will be saved to './data/${key}.temp.json' instead.`);
 		}
-		fs.writeFile(`./storage/${frozen ? `${key}.temp` : key}.json`, JSON.stringify(this._storage[key]), e => {
+		fs.writeFile(`./data/${frozen ? `${key}.temp` : key}.json`, JSON.stringify(this._storage[key]), e => {
 			if (e) {
-				utils.errorMsg(`Error writing to './storage/${frozen ? `${key}.temp` : key}.json': ${e.stack}`);
+				utils.errorMsg(`Error writing to './data/${frozen ? `${key}.temp` : key}.json': ${e.stack}`);
 			}
 		});
 	}

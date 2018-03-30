@@ -45,7 +45,7 @@ try {
 	process.exit(0);
 }
 
-// Initialise the databases.
+// Initialise our persistence.
 require('./storage');
 // Start the client.
 require('./client');
