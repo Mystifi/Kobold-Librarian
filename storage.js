@@ -27,8 +27,9 @@ class Storage {
 	}
 
 	importJSON(key) {
-		let file = '{}';
 		fs.readFile(`./data/${key}.json`, (e, data) => {
+			let file = '{}';
+
 			if (e) {
 				utils.errorMsg(`Error reading from './data/${key}.json': ${e.stack}`);
 				utils.errorMsg("The file will be marked as frozen; saved data will not be overwritten.");
@@ -36,8 +37,9 @@ class Storage {
 			} else {
 				file = data.toString();
 			}
+
+			this._storage[key] = JSON.parse(file);
 		});
-		this._storage[key] = JSON.parse(file);
 	}
 
 	exportJSON(key) {
