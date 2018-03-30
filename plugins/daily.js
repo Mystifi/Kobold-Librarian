@@ -5,6 +5,8 @@
  * which allows bypassing of the character limit for chat messages on PS. To add new dailies, just add the necessary fields to the dailies object.
  */
 
+'use strict';
+
 const utils = require('../utils');
 const storage = require('../storage');
 const server = require('../server');
