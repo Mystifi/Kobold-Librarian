@@ -5,7 +5,6 @@
  */
 
 const path = require('path');
-const url = require('url');
 
 const connect = require('connect');
 const serveStatic = require('serve-static');
@@ -95,13 +94,13 @@ class Server {
 	// which dynamically generates the HTML to display on that path.
 	addRoute(path, resolver) {
 		this.pages.set(path, resolver);
-        this.site.use(path, resolver);
-        this.restart();
+		this.site.use(path, resolver);
+		this.restart();
 	}
 
 	removeRoute(path) {
-        this.pages.delete(path);
-        this.restart();
+		this.pages.delete(path);
+		this.restart();
 	}
 
 	// Adds other sorts of middleware to the router.
