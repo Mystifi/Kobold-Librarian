@@ -23,16 +23,16 @@ module.exports = {
 		return this.send(ret);
 	},
 
-	async git() {
+	async git(userid) {
 		let message = `[[Github repository for this bot <${packageInfo.repository.url}>]]`;
-		if (!this.hasPerms('+')) return this.sendPM(message);
+		if (!this.hasPerms('+')) return this.sendPM(userid, message);
 
 		return this.send(message);
 	},
 
-	async owners() {
+	async owners(userid) {
 		let message = `The owners of this bot are: ${config.owners.join(', ')}.`;
-		if (!this.hasPerms('+')) return this.sendPM(message);
+		if (!this.hasPerms('+')) return this.sendPM(userid, message);
 
 		return this.send(message);
 	},
