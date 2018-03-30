@@ -22,6 +22,7 @@ try {
 	require.resolve('body-parser');
 	require.resolve('colors');
 	require.resolve('request');
+	require.resolve('probe-image-size');
 } catch (e) {
 	console.log(`Not all dependencies are installed. Please run 'npm install' before running the bot.`);
 	process.exit(0);
