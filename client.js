@@ -33,6 +33,7 @@ class CommandWrapper {
 
 	async run(commandName, userid, roomid, message) {
 		if (config.owners.includes(userid)) this.rank = '~'; // There might be a more elegant way to do it. Can't think of it rn however.
+		this.command = commandName;
 		let command = this.commands.get(commandName);
 		command.apply(this, [userid, roomid, message]).catch(e => {
 			utils.errorMsg(`An error occurred within the ${commandName} command: ${e.stack}`);
@@ -184,7 +185,6 @@ class Client {
 			this.commands.set(c, core[c]);
 		}
 
-
 		fs.readdirSync('./plugins')
 			.filter(file => file.endsWith('.js'))
 			.forEach(file => {
@@ -193,6 +193,11 @@ class Client {
 				if (plugin.commands) {
 					for (let c in plugin.commands) {
 						this.commands.set(c, plugin.commands[c]);
+					}
+					if (plugin.aliases) {
+						for (let a in plugin.aliases) {
+							this.commands.set(a, plugin.commands[plugin.aliases[a]]);
+						}
 					}
 				}
 			});
