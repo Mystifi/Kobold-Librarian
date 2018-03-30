@@ -28,6 +28,7 @@ class Server {
 		this.restartPending = false;
 
 		this.pages = new Map();
+		this.accessTokens = new Map();
 
 		this.init();
 

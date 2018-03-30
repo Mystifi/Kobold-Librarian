@@ -9,6 +9,12 @@ exports.commandToken = ';';
 exports.host = 'sim.psim.us';
 exports.port = '8000';
 
+// The host and port for the webserver hosted by the bot.
+// Note that the host is purely for display purposes, and changing this to a domain name isn't the same as actually setting it up.
+// Also be aware that on most systems, running a server on a low port number requires root.
+exports.serverhost = 'localhost';
+exports.serverport = '8000';
+
 // The avatar for the bot to use. Set to 0 if you want the bot to use a random avatar.
 exports.avatar = 61;
 
