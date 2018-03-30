@@ -1,12 +1,7 @@
 /**
- * Storage
- * Cassius - https://github.com/sirDonovan/Cassius
+ * storage.js: Data persistence.
  *
- * This file handles the storage for the bot.
- *
- * Modified from Cassius's Storage module to best fit The Scribe's needs.
- *
- * @license MIT license
+ * Modified from sirDonovan/Cassius's Storage module to best fit The Scribe's needs.
  */
 
 'use strict';
@@ -19,43 +14,43 @@ const BACKUP_INTERVAL = 60 * 60 * 1000;
 class Storage {
 	constructor() {
 		this._storage = {};
-                this.frozenKeys = new Set();
+		this.frozenKeys = new Set();
 		this.backupInterval = setInterval(() => this.exportStorage(), BACKUP_INTERVAL);
 
-                this.importStorage();
-                utils.statusMsg("Storage imported successfully.");
+		this.importStorage();
+		utils.statusMsg("Storage imported successfully.");
 	}
 
 	getJSON(key) {
 		if (!(key in this._storage)) this._storage[key] = {};
-		return this._storage[roomid];
+		return this._storage[key];
 	}
 
 	importJSON(key) {
-                let file = '{}';
+		let file = '{}';
 		fs.readFile(`./storage/${key}.json`, (e, data) => {
-                        if (e) {
-                                utils.errorMsg(`Error reading from './storage/${key}.json': ${e.stack}`);
-                                utils.errorMsg("The file will be marked as frozen; saved data will not be overwritten.");
-                                this.frozenKeys.add(key);
-                        } else {
-                                file = data.toString();
-                        }
-                });
+			if (e) {
+				utils.errorMsg(`Error reading from './storage/${key}.json': ${e.stack}`);
+				utils.errorMsg("The file will be marked as frozen; saved data will not be overwritten.");
+				this.frozenKeys.add(key);
+			} else {
+				file = data.toString();
+			}
+		});
 		this._storage[key] = JSON.parse(file);
 	}
 
 	exportJSON(key) {
 		if (!(key in this._storage)) return;
-                let frozen = this.frozenKeys.has(key);
-                if (frozen) {
-                        utils.errorMsg(`The file './storage/${key}.json' is marked as frozen; it will be saved to './storage/${key}.temp.json' instead.`);
-                }
+		let frozen = this.frozenKeys.has(key);
+		if (frozen) {
+			utils.errorMsg(`The file './storage/${key}.json' is marked as frozen; it will be saved to './storage/${key}.temp.json' instead.`);
+		}
 		fs.writeFile(`./storage/${frozen ? `${key}.temp` : key}.json`, JSON.stringify(this._storage[key]), e => {
-                        if (e) {
-                                utils.errorMsg(`Error writing to './storage/${frozen ? `${key}.temp` : key}.json': ${e.stack}`);
-                        }
-                });
+			if (e) {
+				utils.errorMsg(`Error writing to './storage/${frozen ? `${key}.temp` : key}.json': ${e.stack}`);
+			}
+		});
 	}
 
 	importStorage() {
