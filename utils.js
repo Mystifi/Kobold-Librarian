@@ -22,11 +22,25 @@ module.exports = {
 		let parts = [date.getDate(), date.getMonth() + 1, date.getHours(), date.getMinutes(), date.getSeconds()].map(this.leftpad);
 		return `[${parts.slice(0, 2).join('/')} ${parts.slice(2, 5).join(':')}]`;
 	},
+	parseQueryString(url) {
+		let split = url.split('?');
+		if (split.length === 1) return {};
+		let query = split[1];
+		let parts = query.split('&');
+		let output = {};
+		for (let i = 0; i < parts.length; i++) {
+			let elem = parts[i].split('=');
+			if (elem.length === 2) {
+				output[elem[0]] = elem[1];
+			}
+		}
+		return output;
+	},
 
 	// Logging-specific utility functions. `output` is exported to allow
 	// extensibility.
 	output(messageType, text) {
-		console.log(`${this.timestamp()} ${messageType}: ${text}`)
+		console.log(`${this.timestamp()} ${messageType}: ${text}`);
 	},
 	statusMsg(text) {
 		this.output('STATUS'.green, text);
