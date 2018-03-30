@@ -1,3 +1,10 @@
+/*
+ * daily.js: Daily (and weekly) informational commands
+ *
+ * This plugin handles the various 'otd' and 'otw' commands in the writing room(s). It provides a webpage for setting and editing them,
+ * which allows bypassing of the character limit for chat messages on PS. To add new dailies, just add the necessary fields to the dailies object.
+ */
+
 const utils = require('../utils');
 const storage = require('../storage');
 const server = require('../server');
