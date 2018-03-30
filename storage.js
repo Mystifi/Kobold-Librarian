@@ -54,7 +54,7 @@ class Storage {
 	}
 
 	importStorage() {
-		let files = fs.readdirSync('./storage');
+		let files = fs.readdirSync('./data');
 		for (let file of files) {
 			if (!file.endsWith('.json')) continue;
 			this.importJSON(file.substr(0, file.indexOf('.json')));

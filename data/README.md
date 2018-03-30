@@ -1,0 +1,1 @@
+This directory is where all the data files are stored in .json format. Filenames correspond to the keys as defined in the plugins. When files fail to load, new data is saved in `.temp` files instead.
