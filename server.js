@@ -5,6 +5,7 @@
  */
 
 const path = require('path');
+const crypto = require('crypto');
 
 const connect = require('connect');
 const serveStatic = require('serve-static');
@@ -125,6 +126,38 @@ class Server {
 				this.restart();
 			}
 		});
+	}
+
+	createAccessToken(permission, roomid, userid, mins = 60) {
+		const token = crypto.randomBytes(5).toString('hex');
+		const tokenData = {
+			expiration: mins * 1000 * 60,
+			permission: permission,
+			room: roomid,
+			user: userid,
+		};
+		tokenData.timeout = setTimeout(() => this.removeAccessToken(token), tokenData.expiration);
+		this.accessTokens.set(token, tokenData);
+		return token;
+	}
+
+	getAccessToken(token) {
+		let data = this.accessTokens.get(token);
+		if (data) {
+			clearTimeout(data.timeout);
+			setTimeout(() => this.removeAccessToken(token), data.expiration);
+			return data;
+		}
+		return false;
+	}
+
+	removeAccessToken(token) {
+		let data = this.accessTokens.get(token);
+		if (data) {
+			clearTimeout(data.timeout);
+			return this.accessTokens.delete(token);
+		}
+		return false;
 	}
 }
 
