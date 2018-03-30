@@ -30,6 +30,20 @@ const dailies = {
 			</table>`;
 		},
 	},
+	hotd: {
+		name: "History of the Day",
+		room: 'canalavelibrary',
+		params: ['title', 'date', 'location', 'description'],
+		async renderEntry(entry) {
+			return `<span style="font-size: 22pt ; display: inline-block; color: black">${entry.title}</span>\
+			<span style="font-family: Verdana, Geneva, sans-serif ; font-size: 12pt ; display: block ; color: rgba(0, 0, 0 , 0.7) ; letter-spacing: 0px">\
+			${entry.date} - <strong style="letter-spacing: 0">${entry.location}</strong>\
+			</span>\
+			<span style="font-size: 10pt ; font-family: Verdana, Geneva, sans-serif; margin-top: 5px ; display: block ; color: rgba(0, 0, 0 , 0.8)">\
+				${entry.description}\
+			</span>`;
+		},
+	},
 };
 
 async function getHTML(key, pm) {
