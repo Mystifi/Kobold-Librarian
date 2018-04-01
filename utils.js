@@ -52,6 +52,29 @@ module.exports = {
 		return [Math.round(width * ratio), Math.round(height * ratio)];
 	},
 
+	// HTML-related functions used by webpages
+	wrapHTML(title, body) {
+		return `<!DOCTYPE html>\
+		<html>\
+			<head>\
+				<meta charset="UTF-8">\
+				<link rel="stylesheet" href="/style.css">\
+				<link href="https://fonts.googleapis.com/css?family=Ovo" rel="stylesheet">\
+				<title>${title} - The Scribe</title>\
+			</head>\
+			<body>\
+				<div id="container">\
+					<div id="header">\
+						<h1>${title} - The Scribe</h1>\
+					</div>\
+					<div id="text-area">\
+						${body}\
+					</div>\
+				</div>\
+			</body>\
+		</html>`;
+	},
+
 	// Logging-specific utility functions. `output` is exported to allow
 	// extensibility.
 	output(messageType, text) {

@@ -116,19 +116,7 @@ server.addRoute('/daily.html', (req, res) => {
 			${inputs.join('<br/>')}`;
 	}
 
-	return res.end(`<!DOCTYPE html><html>\
-		<head>\
-			<meta charset="UTF-8">\
-			<link rel="stylesheet" type="text/css" href="./style.css">\
-			<title>Daily commands for ${roomid} - The Scribe</title>\
-		</head>\
-		<body>\
-			<form method="POST">\
-				${entryHTML}<br/>\
-				<input type="submit" value="Submit">\
-			</form>
-		</body>
-	</html>`);
+	return res.end(utils.wrapHTML(`Daily commands for ${roomid}`,`<form method="POST">${entryHTML}<br/><input type="submit" value="Submit"></form>`));
 });
 
 const aliases = {};

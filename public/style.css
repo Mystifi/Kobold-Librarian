@@ -1,0 +1,46 @@
+body {
+  font-family: 'Ovo', serif;
+  background: #c0a362 url('/paper.jpg') no-repeat center scroll;
+  background-size: cover;
+}
+
+#container {
+  max-width:70%;
+  margin:auto;
+  background: #FCFCFC;
+  box-shadow: 0px 5px 8px rgba(0, 0, 0, 0.5);
+}
+
+#header {
+  background: url('/mascot.png'), url('/bg.jpg');
+  background-size: auto 150%, cover;
+  background-repeat: no-repeat, no-repeat;
+  background-position: top, center;
+  text-align: center;
+  height: 200px;
+  display: flex;
+}
+
+#banner {
+  display:none;
+  margin: 5px;
+}
+
+#text-area {
+  padding: 5px 40px 10px 40px;
+}
+
+h1 {
+  background: rgba(0, 0, 0, 0.4);
+  color: #eeeeee;
+  padding: 3px;
+  width: 100%;
+  margin: 0px;
+  letter-spacing: 0.1em;
+  align-self: flex-end;
+}
+
+a {
+  color: #c0a362;
+  text-decoration: none;
+}
