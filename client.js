@@ -49,6 +49,9 @@ class Client {
 		this.reconnects = 0;
 
 		this.userlists = {};
+		this.joinHandlers = [];
+		this.leaveHandlers = [];
+
 		this.commands = new Map();
 
 		this.client.on('connectFailed', error => {
@@ -129,10 +132,14 @@ class Client {
 		case 'j':
 			if (!this.userlists[roomid]) this.userlists[roomid] = {}; // failsafe, is this even needed? im paranoid and shit
 			this.userlists[roomid][utils.toId(split[2])] = [split[2][0], split[2].slice(1)];
+
+			Promise.all(this.joinHandlers.map(handler => handler.apply(this, [utils.toId(split[2])]))).catch(e => utils.errorMsg(e));
 			break;
 		case 'L':
 		case 'l':
 			delete this.userlists[roomid][utils.toId(split[2])];
+
+			Promise.all(this.leaveHandlers.map(handler => handler.apply(this, [utils.toId(split[2])]))).catch(e => utils.errorMsg(e));
 			break;
 		case 'N':
 		case 'n':
@@ -190,6 +197,12 @@ class Client {
 			.forEach(file => {
 				let plugin = require(`./plugins/${file}`);
 
+				if (plugin.onJoin) {
+					this.joinHandlers.push(plugin.onJoin);
+				}
+				if (plugin.onLeave) {
+					this.leaveHandlers.push(plugin.onLeave);
+				}
 				if (plugin.commands) {
 					for (let c in plugin.commands) {
 						this.commands.set(c, plugin.commands[c]);
