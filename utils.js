@@ -51,7 +51,18 @@ module.exports = {
 
 		return [Math.round(width * ratio), Math.round(height * ratio)];
 	},
-
+	// From Zarel/Pokemon-Showdown
+	plural(num, plural = 's', singular = '') {
+		if (num && typeof num.length === 'number') {
+			num = num.length;
+		} else if (num && typeof num.size === 'number') {
+			num = num.size;
+		} else {
+			num = Number(num);
+		}
+		return (num !== 1 ? plural : singular);
+	},
+	
 	// HTML-related functions used by webpages
 	wrapHTML(title, body) {
 		return `<!DOCTYPE html>\
