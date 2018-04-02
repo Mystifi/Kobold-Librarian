@@ -5,9 +5,11 @@
  */
 
 const config = require('./config');
-const packageInfo = require('./package.json');
-
+const quills = require('./quills');
 const server = require('./server');
+const utils = require('./utils');
+
+const packageInfo = require('./package.json');
 
 module.exports = {
 	// Based on the eval function in Kid A.
@@ -39,10 +41,33 @@ module.exports = {
 		return this.send(message);
 	},
 
+	// Quills commands
+
 	async shop(userid, roomid) {
 		let message = `Here is the Scribe Shop: ${server.url}shop.html${!roomid ? `?token=${server.createAccessToken('shop', roomid, userid)}` : ''}`;
 		if (!this.hasPerms('+')) return this.sendPM(userid, message);
 
 		return this.send(message);
 	},
+	async addquills(userid, roomid, message) {
+		if (!this.hasPerms('%')) return this.sendPM(userid, `Permission denied.`);
+		let [target, amount] = message.split(',');
+		target = utils.toId(target);
+		amount = parseInt(amount);
+		if (!target || !amount || isNaN(amount)) return this.send('Syntax: ``.addquills username, amount``');
+	
+		let newBalance = quills.addQuills(target, amount);
+		this.send(`Quills successfully added to the account of ${target}.`);
+		this.sendPM(target, `${amount} quill${utils.plural(amount)} have been added to your account. You now have ${newBalance} quill${utils.plural(newBalance)}.`);
+	},
+	async removequills(userid, roomid, message) {
+		if (!this.hasPerms('%')) return this.sendPM(userid, `Permission denied.`);
+		let [target, amount] = message.split(',');
+		target = utils.toId(target);
+		amount = parseInt(amount);
+		if (!target || !amount || isNaN(amount)) return this.send('Syntax: ``.removequills username, amount``');
+	
+		let newBalance = quills.removeQuills(target, amount);
+		this.send(`Quills successfully removed from the account of ${target}.`);
+		this.sendPM(target, `${amount} quill${utils.plural(amount)} have been removed from your account. You now have ${newBalance} quill${utils.plural(newBalance)}.`);	},
 };
