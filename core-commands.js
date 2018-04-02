@@ -7,6 +7,8 @@
 const config = require('./config');
 const packageInfo = require('./package.json');
 
+const server = require('./server');
+
 module.exports = {
 	// Based on the eval function in Kid A.
 	async eval(userid, roomid, message) {
@@ -32,6 +34,13 @@ module.exports = {
 
 	async owners(userid) {
 		let message = `The owners of this bot are: ${config.owners.join(', ')}.`;
+		if (!this.hasPerms('+')) return this.sendPM(userid, message);
+
+		return this.send(message);
+	},
+
+	async shop(userid, roomid) {
+		let message = `Here is the Scribe Shop: ${server.url}shop.html${!roomid ? `?token=${server.createAccessToken('shop', roomid, userid)}` : ''}`;
 		if (!this.hasPerms('+')) return this.sendPM(userid, message);
 
 		return this.send(message);
