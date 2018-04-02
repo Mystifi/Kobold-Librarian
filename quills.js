@@ -1,4 +1,9 @@
-'use strict';
+/*
+ * quills.js: Core functionality of the Scribe Shop
+ *
+ * Handles creating the webserver routes for the Scribe Shop, as well as managing quills, the virtual
+ * currency used by the bot.
+ */
 
 const config = require('./config');
 const utils = require('./utils');
