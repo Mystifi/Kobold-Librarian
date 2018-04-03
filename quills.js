@@ -20,6 +20,7 @@ class Quills {
 		server.addRoute(`/shop.html`, (req, res) => {
 			let queryData = utils.parseQueryString(req.url);
 			let userid;
+			let account;
 			if (queryData.token) {
 				const tokenData = server.getAccessToken(queryData.token);
 				if (!tokenData || tokenData.permission !== 'shop') return res.end(`Invalid or expired token provided. Please re-use the '${config.commandToken}shop' command to get a new, valid token.`);
@@ -36,11 +37,12 @@ class Quills {
 						client.sendPM(userid, e);
 					}
 				}
+				account = this.getAccount(userid);
 			}
 
 			let output = `<h2>Got some spare quills? This is where you can spend them!</h2>`;
 			if (userid) {
-				output += `<p>Greetings, ${userid}. You currently have <strong>${this.getAccount(userid).balance} quill${utils.plural(this.getAccount(userid).balance)}</strong> to spend.</p>\
+				output += `<p>Greetings, ${userid}. You currently have <strong>${account.balance} quill${utils.plural(account.balance)}</strong> to spend.</p>\
 				<p>To purchase items, type the amount you wish to buy in the box below the item description, and press the Purchase button when you're done.</p>`;
 			} else {
 				output += `<p>Purchasing items in the shop can be done by using the '${config.commandToken}shop' command in PM with the bot. This will send you a personalized URL allowing you to purchase items in the shop.</p>`;
@@ -50,8 +52,23 @@ class Quills {
 				output += `<p><h4>${item.name}</h4>\
 					<p>Price: ${item.price} quills</p>\
 					<p>Description: <em>${item.description}</em></p>\
-					<p>${item.uses > 0 ? `Number of uses: ${item.uses}`: ''}\
-					${userid ? `<input type="number" name="${itemId}" placeholder="0"/>` : ''}</p>`;
+					${item.uses > 0 ? `<p>Number of uses: ${item.uses}</p>`: ''}`;
+
+				if (userid) {
+					if (account.inventory[itemId]) {
+						if (item.unique) {
+							output += `<p><strong><small>You already own this.</small></strong></p>`;
+							return;
+						} else {
+							if (item.uses) {
+								output += `<p>Uses left: ${account.inventory[itemId].uses}</p>`;
+							} else {
+								output += `<p>Owned: ${account.inventory[itemId].amount}</p>`;
+							}
+						}
+					}
+					output += `<input type="number" name="${itemId}" placeholder="0"/>`;
+				}
 			});
 			if (userid) output += `<input type="submit" value="Purchase">`;
 			output += `</form>`;
@@ -59,9 +76,9 @@ class Quills {
 		});
 	}
 
-	addShopItem(id, name, price, description, uses) {
+	addShopItem(id, name, price, description, uses, unique) {
 		if (this.shop.has(id)) return utils.errorMsg(`'${id}' is already a shop item.`);
-		this.shop.set(id, {name, price, description, uses});
+		this.shop.set(id, {name, price, description, uses, unique});
 	}
 
 	getAccount(userid) {
@@ -104,6 +121,7 @@ class Quills {
 		if (!(this.shop.has(itemId))) throw(`The item "${itemId}" doesn't exist.`);
 		let account = this.getAccount(userid);
 		let item = this.shop.get(itemId);
+		if (('unique' in item) && account.inventory[itemId]) throw(`You don't need to buy another ${item.name}.`);
 		let limited = ('uses' in item);
 		if (limited) {
 			// Count how many more copies a user needs. If the user already has the item, then find
