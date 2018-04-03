@@ -11,71 +11,43 @@ const utils = require('./utils');
 const server = require('./server');
 const storage = require('./storage');
 
-const pages = {
-	shop: {
-		title: "Shop",
-		header: "Scribe Shop",
-		resolver(context, user, showForm) {
-			let ret = `<p>Got some spare quills? This is where you can spend them!</p>\
-				<p>Use <code>${config.commandToken}buy [item], [quantity = 1]</code> to purchase something from the shop. Alternatively, you can use <code>${config.commandToken}purchase</code> instead.</p>\
-				<p><code>item</code> is the name of the item, and <code>quantity</code> is the amount of the item to purchase (which defaults to 1). For example: <code>${config.commandToken}buy cookie</code></p>\
-				<p>If an item has a "Uses" tag, then the item can be redeemed a limited number of times before you run out. Purchasing more of the item will replenish your number of uses.</p>\
-				<p><strong>DISCLAIMER:</strong> Purchased items will not be refunded, so please think before you purchase.</p>\
-				<br/>\
-				<p>Hello, <strong>${user}</strong>! ${context.data[user] ? `You currently have <strong>${context.data[user].balance}</strong> quills to spend.` : "You don't currently have any quills."}</p>`;
-			let count = 0;
-			context.shop.forEach((item, itemId) => {
-				ret += `${count++}. <u>${item.name}</u><br/>\
-					Item ID: ${itemId}<br/>\
-					Cost: ${item.price} quills<br/>\
-					Description: <em>${item.description}</em><br/>\
-					${item.uses > 0 ? `Number of uses: ${item.uses}`: ''}`;
-					// TODO: Add the form tags if `showForm` is true (called if a token is provided)
-			});
-			return ret;
-		},
-	},
-	leaderboard: {
-		title: "Leaderboard",
-		header: "Quills Leaderboard",
-		resolver(context, user) {
-			let ret = `<p>Here is a list of the users with the highest total amount of quills earned:</p>`;
-			let top = Object.entries(context.data).sort((a, b) => b[1].totalEarned - a[1].totalEarned);
-			for (let i = 0, len = top.length < 50 ? top.length : 50; i < len; i++) {
-				let [userid, account] = top[i];
-				ret += `${i + 1}. ${userid === user ? `<strong>${userid}</strong>` : userid} (${account.totalEarned})${i !== len - 1 ? '<br/>' : ''}`;
-			}
-			return ret;
-		},
-	},
-};
-
 class Quills {
 	constructor() {
 		this.data = storage.getJSON('quills');
 		this.shop = new Map();
 
-		// Add the routes to the webpages.
-		for (let [page, pageData] of Object.entries(pages)) {
-			server.addRoute(`/${page}.html`, (req, res) => {
-				let queryData = utils.parseQueryString(req.url);
-				/**
-				 * - Leaderboard doesn't need a token; if we still want a userid passed, we can
-				 *   possibly append `?userid=NAME` to the end of `req.url` (which would show up)
-				 *   in `queryData.userid`.
-				 * - Shop doesn't need a token, so we can resort to the method above to still greet
-				 *   the user.
-				 * - If `req.method` is POST, then pull `item` and `amount` from `req.data`. This is
-				 *   where I had the issues, because I wasn't sure if I should have `<input name="item|ITEM ID">`,
-				 *   which would allow for the purchasing of multiple items. Same for the amounts, except for `<input name="amount|ITEM ID|AMOUNT">`?
-				 * - Otherwise, find `tokenData.user` and still call `pageData.resolver(this, tokenData.user)`.
-				 */
+		server.addRoute(`/shop.html`, (req, res) => {
+			let queryData = utils.parseQueryString(req.url);
+			let userid;
+			if (queryData.token) {
+				const tokenData = server.getAccessToken(queryData.token);
+				if (!tokenData || tokenData.permission !== 'shop') return res.end(`Invalid or expired token provided. Please re-use the '${config.commandToken}shop' command to get a new, valid token.`);
+				userid = tokenData.user;
+			}
+
+			let output = `<h2>Got some spare quills? This is where you can spend them!</h2>`;
+			if (userid) {
+				output += `<p>Greetings, ${userid}. You currently have <strong>${this.getAccount(userid).balance} quill${utils.plural(this.getAccount(userid).balance)}</strong> to spend.</p>\
+				<p>To purchase items, type the amount you wish to buy in the box below the item description, and press the Purchase button when you're done.</p>`;
+			} else {
+				`<p>Purchasing items in the shop can be done by using the '${config.commandToken}shop' command in PM with the bot. This will send you a personalized URL allowing you to purchase items in the shop.</p>`;
+			}
+			output += `<h3>Items:</h3><form method="POST">`;
+			this.shop.forEach((item, itemId) => {
+				output += `<p><h4>${item.name}</h4><br/>\
+					Price: ${item.price} quills<br/>\
+					Description: <em>${item.description}</em><br/>\
+					${item.uses > 0 ? `Number of uses: ${item.uses}`: ''}\
+					${userid ? `<input type="number" name="${itemId}" placeholder="0"/>` : ''}</p>`;
 			});
-		}
+			if (userid) output += `<input type="submit" value="Purchase">`;
+			output += `</form>`;
+			return res.end(utils.wrapHTML('Scribe Shop', output));
+		});
 	}
 
 	addShopItem(id, name, price, description, uses) {
-		if (id in this.shop) {/* do something */}
+		if (id in this.shop) return utils.errorMsg(`'${id}' is already a shop item.`);
 		this.shop.set(id, {name, price, description, uses});
 	}
 
@@ -84,10 +56,15 @@ class Quills {
 		return this.data[userid];
 	}
 
+	getTop(limit) {
+		return Object.entries(this.data).sort((a, b) => b[1].totalEarned - a[1].totalEarned).slice(0, limit);
+	}
+
 	addQuills(userid, amount) {
 		let account = this.getAccount(userid);
 		let balance = account.balance += amount;
 		account.totalEarned += amount;
+		storage.exportJSON('quills');
 		return balance;
 	}
 
@@ -95,6 +72,7 @@ class Quills {
 		let account = this.getAccount(userid);
 		if (account.balance - amount < 0) amount = account.balance;
 		let balance = account.balance -= amount;
+		storage.exportJSON('quills');
 		return balance;
 	}
 
@@ -144,6 +122,7 @@ class Quills {
 			purchased.uses = item.uses;
 			itemMessage = `You have ${item.uses} available use${utils.plural(item.uses)} for your ${item.name}.`;
 		}
+		storage.exportJSON('quills');
 		return `Successfully purchased ${amount} ${item.name}${utils.plural(amount)} for ${price} quills. ${itemMessage} New balance: ${balance}`;
 	}
 }
