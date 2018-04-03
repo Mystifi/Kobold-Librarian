@@ -44,3 +44,21 @@ a {
   color: #c0a362;
   text-decoration: none;
 }
+
+table {
+  margin: auto;
+}
+
+th {
+  padding: 5px 15px 7px 15px;
+  text-decoration: underline #c0a362;
+}
+
+td {
+  padding: 5px;
+  text-align: center;
+}
+
+h4 {
+ margin: 5px 0px; 
+}

@@ -5,6 +5,7 @@
  * currency used by the bot.
  */
 
+const client = require('./client');
 const config = require('./config');
 const utils = require('./utils');
 
@@ -23,6 +24,18 @@ class Quills {
 				const tokenData = server.getAccessToken(queryData.token);
 				if (!tokenData || tokenData.permission !== 'shop') return res.end(`Invalid or expired token provided. Please re-use the '${config.commandToken}shop' command to get a new, valid token.`);
 				userid = tokenData.user;
+				if (req.method === "POST" && req.body) {
+					try {		
+						for (const key in req.body) {
+							let amount = parseInt(req.body[key]);
+							if (!isNaN(amount) && amount > 0) {
+								client.sendPM(userid, this.purchase(userid, key, amount));
+							}	
+						}
+					} catch (e) {
+						client.sendPM(userid, e);
+					}
+				}
 			}
 
 			let output = `<h2>Got some spare quills? This is where you can spend them!</h2>`;
@@ -30,14 +43,14 @@ class Quills {
 				output += `<p>Greetings, ${userid}. You currently have <strong>${this.getAccount(userid).balance} quill${utils.plural(this.getAccount(userid).balance)}</strong> to spend.</p>\
 				<p>To purchase items, type the amount you wish to buy in the box below the item description, and press the Purchase button when you're done.</p>`;
 			} else {
-				`<p>Purchasing items in the shop can be done by using the '${config.commandToken}shop' command in PM with the bot. This will send you a personalized URL allowing you to purchase items in the shop.</p>`;
+				output += `<p>Purchasing items in the shop can be done by using the '${config.commandToken}shop' command in PM with the bot. This will send you a personalized URL allowing you to purchase items in the shop.</p>`;
 			}
 			output += `<h3>Items:</h3><form method="POST">`;
 			this.shop.forEach((item, itemId) => {
-				output += `<p><h4>${item.name}</h4><br/>\
-					Price: ${item.price} quills<br/>\
-					Description: <em>${item.description}</em><br/>\
-					${item.uses > 0 ? `Number of uses: ${item.uses}`: ''}\
+				output += `<p><h4>${item.name}</h4>\
+					<p>Price: ${item.price} quills</p>\
+					<p>Description: <em>${item.description}</em></p>\
+					<p>${item.uses > 0 ? `Number of uses: ${item.uses}`: ''}\
 					${userid ? `<input type="number" name="${itemId}" placeholder="0"/>` : ''}</p>`;
 			});
 			if (userid) output += `<input type="submit" value="Purchase">`;
@@ -47,7 +60,7 @@ class Quills {
 	}
 
 	addShopItem(id, name, price, description, uses) {
-		if (id in this.shop) return utils.errorMsg(`'${id}' is already a shop item.`);
+		if (this.shop.has(id)) return utils.errorMsg(`'${id}' is already a shop item.`);
 		this.shop.set(id, {name, price, description, uses});
 	}
 
@@ -77,7 +90,7 @@ class Quills {
 	}
 
 	purchase(userid, itemId, amount = 1) {
-		if (!(itemId in this.shop)) return `The item "${itemId}" doesn't exist.`;
+		if (!(this.shop.has(itemId))) throw(`The item "${itemId}" doesn't exist.`);
 		let account = this.getAccount(userid);
 		let item = this.shop.get(itemId);
 		let limited = ('uses' in item);
@@ -87,7 +100,7 @@ class Quills {
 			// default to the max number of uses.
 			amount = itemId in account.inventory ? (item.uses - account.inventory[itemId].uses) : item.uses;
 		}
-		if (amount <= 0) return (limited ? `You have the maximum amount of usages for a ${item.name} (${item.uses}).` : "You can't purchase zero (or less) of something...");
+		if (amount <= 0) throw(limited ? `You have the maximum amount of usages for a ${item.name} (${item.uses}).` : "You can't purchase zero (or less) of something...");
 		// If the item has a limited number of uses, then we don't multiply the price by the number
 		// of copies of the item.
 		let price = item.price * (limited ? 1 : amount);
@@ -103,9 +116,9 @@ class Quills {
 				exceeding = price > account.balance;
 			}
 			if (exceeding) {
-				return `You don't have enough money to purchase any ${item.name}s.`;
+				throw(`You don't have enough money to purchase any ${item.name}s.`);
 			} else {
-				return `You only have enough money to purchase ${amount} ${item.name}${utils.plural(amount)} for ${price} quills.`;
+				throw(`You only have enough money to purchase ${amount} ${item.name}${utils.plural(amount)} for ${price} quills.`);
 			}
 		}
 		let balance = this.removeQuills(userid, price);
@@ -118,7 +131,7 @@ class Quills {
 			if (!('amount' in purchased)) purchased.amount = 0;
 			purchased.amount += amount;
 			itemMessage = `You now have ${purchased.amount} ${item.name}${utils.plural(purchased.amount)}.`;
-		} else {
+		} else if (item.uses) {
 			purchased.uses = item.uses;
 			itemMessage = `You have ${item.uses} available use${utils.plural(item.uses)} for your ${item.name}.`;
 		}
