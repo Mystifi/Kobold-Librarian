@@ -133,13 +133,13 @@ class Client {
 			if (!this.userlists[roomid]) this.userlists[roomid] = {}; // failsafe, is this even needed? im paranoid and shit
 			this.userlists[roomid][utils.toId(split[2])] = [split[2][0], split[2].slice(1)];
 
-			Promise.all(this.joinHandlers.map(handler => handler.apply(this, [utils.toId(split[2])]))).catch(e => utils.errorMsg(e));
+			Promise.all(this.joinHandlers.map(handler => handler.apply(this, [utils.toId(split[2]), roomid]))).catch(e => utils.errorMsg(e));
 			break;
 		case 'L':
 		case 'l':
 			delete this.userlists[roomid][utils.toId(split[2])];
 
-			Promise.all(this.leaveHandlers.map(handler => handler.apply(this, [utils.toId(split[2])]))).catch(e => utils.errorMsg(e));
+			Promise.all(this.leaveHandlers.map(handler => handler.apply(this, [utils.toId(split[2]), roomid]))).catch(e => utils.errorMsg(e));
 			break;
 		case 'N':
 		case 'n':

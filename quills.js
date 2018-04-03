@@ -89,6 +89,17 @@ class Quills {
 		return balance;
 	}
 
+	useItem(userid, itemId) {
+		let item = this.getAccount(userid).inventory[itemId];
+		if (item) {
+			if (item.uses && --item.uses) return item.uses;
+			delete this.getAccount(userid).inventory[itemId];
+			storage.exportJSON('quills');
+			return 0;
+		}
+		return -1;
+	}
+
 	purchase(userid, itemId, amount = 1) {
 		if (!(this.shop.has(itemId))) throw(`The item "${itemId}" doesn't exist.`);
 		let account = this.getAccount(userid);
