@@ -122,7 +122,7 @@ class Quills {
 		let account = this.getAccount(userid);
 		let item = this.shop.get(itemId);
 		if (('unique' in item) && account.inventory[itemId]) throw(`You don't need to buy another ${item.name}.`);
-		let limited = ('uses' in item);
+		let limited = item.uses;
 		if (limited) {
 			// Count how many more copies a user needs. If the user already has the item, then find
 			// the number of copies they need to return to the maximum number of uses; otherwise, just
@@ -154,7 +154,7 @@ class Quills {
 		if (!(itemId in account.inventory)) account.inventory[itemId] = {};
 		let purchased = account.inventory[itemId];
 		let itemMessage = '';
-		if (!limited) {
+		if (!(limited || item.unique)) {
 			// If an item does not have a limited amount of uses, then a user can purchase
 			// more than one of the item.
 			if (!('amount' in purchased)) purchased.amount = 0;
