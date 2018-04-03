@@ -55,7 +55,7 @@ module.exports = {
 		target = utils.toId(target);
 		amount = parseInt(amount);
 		if (!target || !amount || isNaN(amount)) return this.send('Syntax: ``.addquills username, amount``');
-	
+
 		let newBalance = quills.addQuills(target, amount);
 		this.send(`Quills successfully added to the account of ${target}.`);
 		this.sendPM(target, `${amount} quill${utils.plural(amount)} have been added to your account. You now have ${newBalance} quill${utils.plural(newBalance)}.`);
@@ -66,8 +66,18 @@ module.exports = {
 		target = utils.toId(target);
 		amount = parseInt(amount);
 		if (!target || !amount || isNaN(amount)) return this.send('Syntax: ``.removequills username, amount``');
-	
+
 		let newBalance = quills.removeQuills(target, amount);
 		this.send(`Quills successfully removed from the account of ${target}.`);
-		this.sendPM(target, `${amount} quill${utils.plural(amount)} have been removed from your account. You now have ${newBalance} quill${utils.plural(newBalance)}.`);	},
+		this.sendPM(target, `${amount} quill${utils.plural(amount)} have been removed from your account. You now have ${newBalance} quill${utils.plural(newBalance)}.`);
+	},
+	async balance(userid, roomid, message) {
+		message = utils.toId(message) || userid;
+		let amount = quills.getAccount(message).balance;
+		let ret = `You currently have ${amount} quill${utils.plural(amount)}.`;
+
+		if (!(roomid && this.hasPerms('+'))) return this.sendPM(userid, ret);
+
+		return this.send(ret);
+	},
 };
