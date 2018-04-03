@@ -73,8 +73,10 @@ module.exports = {
 	},
 	async balance(userid, roomid, message) {
 		message = utils.toId(message) || userid;
+		let self = message === userid;
 		let amount = quills.getAccount(message).balance;
-		let ret = `You currently have ${amount} quill${utils.plural(amount)}.`;
+
+		let ret = `${self ? "You" : message} currently ${self ? "have" : "has"} ${amount} quill${utils.plural(amount)}.`;
 
 		if (!(roomid && this.hasPerms('+'))) return this.sendPM(userid, ret);
 
