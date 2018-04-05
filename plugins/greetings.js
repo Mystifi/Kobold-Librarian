@@ -6,6 +6,7 @@ const config = require('../config');
 const quills = require('../quills');
 const server = require('../server');
 const storage = require('../storage');
+const utils = require('../utils');
 
 quills.addShopItem('greeting', "Personalized Greeting", 1000, `Each time you join a room with The Scribe in it, it will send you a personalized greeting of your choice. This greeting can be set or changed at any time using <code>${config.commandToken}setgreeting message</code>. Staff have the right to revoke this purchase if the greeting is misused or abused.`, null, true);
 
