@@ -42,6 +42,13 @@ module.exports = {
 		return this.sendPM(userid, `Console output: ${server.url}console.html?token=${server.createAccessToken('console', roomid, userid)}`);
 	},
 
+	async kill(userid) {
+		if (!config.owners.includes(userid)) return this.send(`You need to be listed as a bot owner to use this command.`);
+
+		utils.errorMsg(`Received '.kill' by ${userid}.`);
+		process.exit(0);
+	},
+
 	async git(userid) {
 		let message = `[[Github repository for this bot <${packageInfo.repository.url}>]]`;
 		if (!this.hasPerms('+')) return this.sendPM(userid, message);
