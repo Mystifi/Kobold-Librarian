@@ -48,7 +48,9 @@ class Quills {
 				output += `<p>Purchasing items in the shop can be done by using the '${config.commandToken}shop' command in PM with the bot. This will send you a personalized URL allowing you to purchase items in the shop.</p>`;
 			}
 			output += `<h3>Items:</h3><form method="POST">`;
-			this.shop.forEach((item, itemId) => {
+			let entries = [...this.shop.entries()];
+			entries = entries.sort((a, b) => a[1].price - b[1].price);
+			for (let [itemId, item] of entries) {
 				output += `<p><h4>${item.name}</h4>\
 					<p>Price: ${item.price} quills</p>\
 					<p>Description: <em>${item.description}</em></p>\
@@ -58,7 +60,7 @@ class Quills {
 					if (account.inventory[itemId]) {
 						if (item.unique) {
 							output += `<p><strong><small>You already own this.</small></strong></p>`;
-							return;
+							continue;
 						} else {
 							if (item.uses) {
 								output += `<p>Uses left: ${account.inventory[itemId].uses}</p>`;
@@ -69,8 +71,8 @@ class Quills {
 					}
 					output += `<input type="number" name="${itemId}" placeholder="0"/>`;
 				}
-			});
-			if (userid) output += `<input type="submit" value="Purchase">`;
+			}
+			if (userid) output += `<p><input type="submit" value="Purchase"></p>`;
 			output += `</form>`;
 			return res.end(utils.wrapHTML('Scribe Shop', output));
 		});
