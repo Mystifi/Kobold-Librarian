@@ -62,7 +62,7 @@ module.exports = {
 		}
 		return (num !== 1 ? plural : singular);
 	},
-	
+
 	// HTML-related functions used by webpages
 	wrapHTML(title, body) {
 		return `<!DOCTYPE html>\
@@ -88,16 +88,24 @@ module.exports = {
 
 	// Logging-specific utility functions. `output` is exported to allow
 	// extensibility.
+	colourMap: new Map([
+		['STATUS', ['green', 'STATUS'.green]],
+		['ERROR', ['red', 'ERROR'.red]],
+		['PM', ['cornflowerblue', 'PM'.cyan]],
+	]),
+	stdout: '',
 	output(messageType, text) {
-		console.log(`${this.timestamp()} ${messageType}: ${text}`);
+		let [htmlColour, outputColour] = this.colourMap.get(messageType);
+		this.stdout += `${this.timestamp()} <strong style="color: ${htmlColour};">${messageType}</strong>: ${text}<br/>`;
+		console.log(`${this.timestamp()} ${outputColour}: ${text}`);
 	},
 	statusMsg(text) {
-		this.output('STATUS'.green, text);
+		this.output('STATUS', text);
 	},
 	errorMsg(text) {
-		this.output('ERROR'.red, text);
+		this.output('ERROR', text);
 	},
 	pmMsg(text) {
-		this.output('PM'.cyan, text);
+		this.output('PM', text);
 	},
 };

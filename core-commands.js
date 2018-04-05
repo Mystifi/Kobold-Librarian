@@ -11,6 +11,15 @@ const utils = require('./utils');
 
 const packageInfo = require('./package.json');
 
+server.addRoute(`/console.html`, (req, res) => {
+	let queryData = utils.parseQueryString(req.url);
+	if (!queryData.token) return res.end(`Usage of this webpage requires a token. Please use the 'console' command to get a valid token.`);
+	let tokenData = server.getAccessToken(queryData.token);
+	if (!tokenData || tokenData.permission !== 'console') return res.end(`Invalid or expired token provided. Please re-use the 'console' command to get a new, valid token.`);
+
+	return res.end(utils.wrapHTML('Console output', `<code>${utils.stdout}</code>`));
+});
+
 module.exports = {
 	// Based on the eval function in Kid A.
 	async eval(userid, roomid, message) {
@@ -25,6 +34,12 @@ module.exports = {
 			ret = `Failed to eval \`\`${message}\`\`: ${e.toString()}`;
 		}
 		return this.send(ret);
+	},
+
+	async console(userid, roomid) {
+		if (!config.owners.includes(userid)) return this.send(`You need to be listed as a bot owner to use this command.`);
+
+		return this.sendPM(userid, `Console output: ${server.url}console.html?token=${server.createAccessToken('console', roomid, userid)}`);
 	},
 
 	async git(userid) {

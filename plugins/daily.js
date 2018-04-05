@@ -37,6 +37,18 @@ const dailies = {
 			</table>`;
 		},
 	},
+	wotd: {
+		name: "Word of the Day",
+		room: 'Writing',
+		params: ['word', 'pronunciation', 'class', 'definition'],
+		async renderEntry(entry) {
+			return `<span style="font-size: 30pt; color: black; display: block">${entry.word}</span>\
+			<span style="font-family: sans-serif; font-size: 12pt; display: block; color: rgba(0,0,0,0.7); letter-spacing: 2px">${entry.pronunciation} / <strong style="letter-spacing: 0">${entry.class}</strong></span>\
+			<span style="font-size: 10pt; font-family: sans-serif; margin-top: 10px; display: block; color: rgba(0,0,0,0.8)">\
+				<strong style="font-family: serif; margin-right: 10px; color: rgba(0,0,0,0.5)">1.</strong>${entry.definition}\
+			</span>`;
+		},
+	},
 	hotd: {
 		name: "History of the Day",
 		room: 'canalavelibrary',
@@ -61,7 +73,7 @@ async function getHTML(key, pm) {
 	return `<div style="background: url(https://i.imgur.com/EQh19sO.png) center ; margin: -2px -4px ; box-shadow: inset 0 0 50px rgba(0 , 0 , 0 , 0.15);">\
 		<div style="font-family: Georgia, serif ; max-width: 550px ; margin: auto ; padding: 8px 8px 12px 8px; text-align: left; background: rgba(250, 250, 250, 0.8)">\
 			<span style="display: block ; font-family: Verdana, Geneva, sans-serif ; font-size: 16pt ; font-weight: bold ; background: #6d6d6d ; padding: 3px 0 ; text-align: center ; border-radius: 2px ; color: rgba(255 , 255 , 255 , 1) ; margin-bottom: 2px">\
-				${dailies[key].name}\
+				<i class="fa fa-fire" aria-hidden="true"></i> ${dailies[key].name} <i class="fa fa-fire" aria-hidden="true"></i>\
 			</span>\
 			${entryHTML}\
 		</div>\
@@ -85,10 +97,10 @@ server.addRoute('/daily.html', (req, res) => {
 			if (!(daily && param) || !dailies[daily] || !dailies[daily].params.includes(param)) continue; // Just in case someone tech-savvy decides to mess with the POST data.
 
 			let val = req.body[key].trim();
-			if (!val || val === store[daily][key]) continue;
 			if (param === 'image' && !/^https?:\/\//.test(val)) val = `http://${val}`;
 
 			if (!store[daily]) store[daily] = {};
+			if (!val || val === store[daily][param]) continue;
 			if (store[daily][param] !== val) changes.add(daily);
 			store[daily][param] = val;
 		}
