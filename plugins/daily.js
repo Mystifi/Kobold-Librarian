@@ -85,6 +85,7 @@ server.addRoute('/daily.html', (req, res) => {
 			if (!(daily && param) || !dailies[daily] || !dailies[daily].params.includes(param)) continue; // Just in case someone tech-savvy decides to mess with the POST data.
 
 			let val = req.body[key].trim();
+			if (!val || val === store[daily][key]) continue;
 			if (param === 'image' && !/^https?:\/\//.test(val)) val = `http://${val}`;
 
 			if (!store[daily]) store[daily] = {};
