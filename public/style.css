@@ -62,3 +62,7 @@ td {
 h4 {
  margin: 5px 0px; 
 }
+
+img {
+  max-width: 100%;
+}
