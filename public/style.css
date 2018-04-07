@@ -1,6 +1,6 @@
 body {
   font-family: 'Ovo', serif;
-  background: #c0a362 url('/paper.jpg') no-repeat center scroll;
+  background: #c0a362 url('/paper.jpg') repeat-y center scroll;
   background-size: cover;
 }
 
@@ -69,4 +69,8 @@ h4 {
 
 img {
   max-width: 100%;
+}
+
+li {
+  padding: 5px 0px;
 }
