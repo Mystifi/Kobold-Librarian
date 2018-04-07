@@ -33,7 +33,10 @@ server.addRoute(`/public-page.html`, (req, res) => {
 		if (!storage.getJSON('public-pages')[pageid]) server.addRoute(`/pages/${pageid}.html`, pubResolver);
 		storage.getJSON('public-pages')[pageid] = req.body.content;
 		storage.exportJSON('public-pages');
-		client.send(tokenData.room, `/modnote ${tokenData.user} updated ${pageid}.html`);
+		res.writeHead(301,
+			{Location: `${server.url}pages/${pageid}.html`}
+		);
+		return res.end();
 	}	
 
 	return res.end(utils.wrapHTML(pageid, `<form method="post"><textarea style=width:100%;" rows=50 name="content">${storage.getJSON('public-pages')[pageid] || ''}</textarea><input type="submit" value="Submit changes"/></form>`));
@@ -52,6 +55,10 @@ server.addRoute(`/page.html`, (req, res) => {
 		if (req.method === "POST" && req.body) {
 			storage.getJSON('personal-pages')[userid] = req.body.content;
 			storage.exportJSON('personal-pages');
+			res.writeHead(301,
+				{Location: `${server.url}page.html?user=${userid}`}
+			);
+			return res.end();
 		}
 		output = `<form method="post"><textarea style=width:100%;" rows=50 name="content">${storage.getJSON('personal-pages')[userid] || ''}</textarea><input type="submit" value="Submit changes"/></form>`;
 	} else {
