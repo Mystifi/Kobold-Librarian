@@ -19,7 +19,7 @@ quills.addShopItem('page', "Personal Webpage", 2500, `A personal webpage on The 
 
 const pubResolver = (req, res) => {
 	const pageid = req.originalUrl.split('/')[2].slice(0, -5);
-	return res.end(utils.wrapHTML(pageid, md.toHTML(storage.getJSON('public-pages')[pageid])));
+	return res.end(utils.wrapHTML(`${pageid[0].toUpperCase()}${pageid.slice(1)}`, md.toHTML(storage.getJSON('public-pages')[pageid])));
 }
 
 server.addRoute(`/public-page.html`, (req, res) => {
