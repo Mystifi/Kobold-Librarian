@@ -10,7 +10,7 @@ const server = require('../server');
 const utils = require('../utils');
 
 server.addRoute(`/leaderboard.html`, (req, res) => {
-	let entries = quills.getTop();
+	let entries = quills.getTop().filter(([, value]) => value.totalEarned > 0);
 	let output = `<table><tr><th>Username</th><th>Current Balance</th><th>Total Earned</th></tr>`;
 	for (let [userid, data] of entries) {
 		output += `<tr><td>${userid}</td><td>${data.balance}</td><td>${data.totalEarned}</td></tr>`;
