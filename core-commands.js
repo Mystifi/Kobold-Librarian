@@ -45,8 +45,23 @@ module.exports = {
 	async kill(userid) {
 		if (!config.owners.includes(userid)) return this.send(`You need to be listed as a bot owner to use this command.`);
 
-		utils.errorMsg(`Received '.kill' by ${userid}.`);
+		utils.errorMsg(`Received '${config.commandToken}kill' by ${userid}.`);
 		process.exit(0);
+	},
+
+	async update(userid) {
+		if (!config.owners.includes(userid)) return this.send(`You need to be listed as a bot owner to use this command.`);
+
+		utils.statusMsg(`Received '${config.commandToken}kill' by ${userid}.`);
+		require('child_process').exec(`git pull --rebase origin master`, error => {
+			if (error) {
+				error = String(error).trim().replace(/\n/g, ' | ');
+				this.sendPM(userid, error);
+				utils.statusMsg(error);
+			} else {
+				this.sendPM(userid, `Update complete.`);
+			}
+		});
 	},
 
 	async git(userid) {
