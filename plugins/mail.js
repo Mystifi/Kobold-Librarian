@@ -35,8 +35,9 @@ module.exports = {
 	},
 	commands: {
 		async mail(userid, roomid, message) {
-			let [target, toSend] = message.split(',').map(param => param.trim());
+			let [target, ...toSend] = message.split(',');
 			target = utils.toId(target);
+			toSend = toSend.join(',').trim();
 			if (!(target && toSend)) return this.sendPM(userid, `Syntax: \`\`${config.commandToken}mail user, message\`\``);
 			if (toSend.length > 250) return this.sendPM(userid, `Your message is too long. (${toSend.length}/250)`);
 
