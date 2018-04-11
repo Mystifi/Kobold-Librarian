@@ -11,14 +11,7 @@ const utils = require('./utils');
 
 const packageInfo = require('./package.json');
 
-server.addRoute(`/console.html`, (req, res) => {
-	let queryData = utils.parseQueryString(req.url);
-	if (!queryData.token) return res.end(`Usage of this webpage requires a token. Please use the 'console' command to get a valid token.`);
-	let tokenData = server.getAccessToken(queryData.token);
-	if (!tokenData || tokenData.permission !== 'console') return res.end(`Invalid or expired token provided. Please re-use the 'console' command to get a new, valid token.`);
-
-	return res.end(utils.wrapHTML('Console output', `<code>${utils.stdout}</code>`));
-});
+server.addRoute(`/console.html`, () => ['Console output', `<code>${utils.stdout}</code>`], {permission: 'console'});
 
 module.exports = {
 	// Based on the eval function in Kid A.

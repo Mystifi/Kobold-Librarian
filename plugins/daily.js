@@ -80,41 +80,13 @@ async function getHTML(key, pm) {
 	</div>`;
 }
 
-server.addRoute('/daily.html', (req, res) => {
-	const queryData = utils.parseQueryString(req.url);
-	if (!queryData.token) return res.end(`Usage of this webpage requires a token. Please use the 'daily' command to get a valid token.`);
-	const tokenData = server.getAccessToken(queryData.token);
-	if (!tokenData || tokenData.permission !== 'daily') return res.end(`Invalid or expired token provided. Please re-use the 'daily' command to get a new, valid token.`);
-	const roomid = tokenData.room;
-
-	if (req.method === "POST" && req.body) {
-		let store = storage.getJSON('dailies');
-
-		const changes = new Set();
-
-		for (const key in req.body) {
-			const [daily, param] = key.split('|');
-			if (!(daily && param) || !dailies[daily] || !dailies[daily].params.includes(param)) continue; // Just in case someone tech-savvy decides to mess with the POST data.
-
-			let val = req.body[key].trim();
-			if (param === 'image' && !/^https?:\/\//.test(val)) val = `http://${val}`;
-
-			if (!store[daily]) store[daily] = {};
-			if (!val || val === store[daily][param]) continue;
-			if (store[daily][param] !== val) changes.add(daily);
-			store[daily][param] = val;
-		}
-
-		storage.exportJSON('dailies');
-		if (changes.size) client.send(roomid, `/modnote ${tokenData.user} updated ${Array.from(changes).join(', ')}.`);
-	}
-
+server.addRoute('/daily.html', (url, queryData, tokenData) => {
 	let entryHTML = '';
 	let current = storage.getJSON('dailies');
 
 	for (const id in dailies) {
 		const daily = dailies[id];
-		if (daily.room !== roomid) continue;
+		if (daily.room !== tokenData.room) continue;
 
 		const inputs = [];
 		const curEntry = current[id] || {};
@@ -127,8 +99,28 @@ server.addRoute('/daily.html', (req, res) => {
 			${inputs.join('<br/>')}`;
 	}
 
-	return res.end(utils.wrapHTML(`Daily commands for ${roomid}`,`<form method="POST">${entryHTML}<br/><input type="submit" value="Submit"></form>`));
-});
+	return [`Daily commands for ${tokenData.room}`, `<form method="POST">${entryHTML}<br/><input type="submit" value="Submit"></form>`];
+}, {permission: 'daily', onPost: (body, tokenData) => {
+	let store = storage.getJSON('dailies');
+
+	const changes = new Set();
+
+	for (const key in body) {
+		const [daily, param] = key.split('|');
+		if (!(daily && param) || !dailies[daily] || !dailies[daily].params.includes(param)) continue; // Just in case someone tech-savvy decides to mess with the POST data.
+
+		let val = body[key].trim();
+		if (param === 'image' && !/^https?:\/\//.test(val)) val = `http://${val}`;
+
+		if (!store[daily]) store[daily] = {};
+		if (!val || val === store[daily][param]) continue;
+		if (store[daily][param] !== val) changes.add(daily);
+		store[daily][param] = val;
+	}
+
+	storage.exportJSON('dailies');
+	if (changes.size) client.send(tokenData.room, `/modnote ${tokenData.user} updated ${Array.from(changes).join(', ')}.`);
+}});
 
 const aliases = {};
 for (const key in dailies) aliases[key] = 'daily';

@@ -7,16 +7,15 @@
 
 const quills = require('../quills');
 const server = require('../server');
-const utils = require('../utils');
 
-server.addRoute(`/leaderboard.html`, (req, res) => {
+server.addRoute(`/leaderboard.html`, () => {
 	let entries = quills.getTop().filter(([, value]) => value.totalEarned > 0);
 	let output = `<table><tr><th>Username</th><th>Current Balance</th><th>Total Earned</th></tr>`;
 	for (let [userid, data] of entries) {
 		output += `<tr><td>${userid}</td><td>${data.balance}</td><td>${data.totalEarned}</td></tr>`;
 	}
 	output += `</table>`;
-	return res.end(utils.wrapHTML('Quills Leaderboard', output));
+	return ['Quills Leaderboard', output];
 });
 
 module.exports = {

@@ -17,26 +17,11 @@ class Quills {
 		this.data = storage.getJSON('quills');
 		this.shop = new Map();
 
-		server.addRoute(`/shop.html`, (req, res) => {
-			let queryData = utils.parseQueryString(req.url);
+		server.addRoute(`/shop.html`, (url, queryData, tokenData) => {
 			let userid;
 			let account;
-			if (queryData.token) {
-				const tokenData = server.getAccessToken(queryData.token);
-				if (!tokenData || tokenData.permission !== 'shop') return res.end(`Invalid or expired token provided. Please re-use the '${config.commandToken}shop' command to get a new, valid token.`);
+			if (tokenData) {
 				userid = tokenData.user;
-				if (req.method === "POST" && req.body) {
-					try {		
-						for (const key in req.body) {
-							let amount = parseInt(req.body[key]);
-							if (!isNaN(amount) && amount > 0) {
-								client.sendPM(userid, this.purchase(userid, key, amount));
-							}	
-						}
-					} catch (e) {
-						client.sendPM(userid, e);
-					}
-				}
 				account = this.getAccount(userid);
 			}
 
@@ -61,12 +46,10 @@ class Quills {
 						if (item.unique) {
 							output += `<p><strong><small>You already own this.</small></strong></p>`;
 							continue;
+						} else if (item.uses) {
+							output += `<p>Uses left: ${account.inventory[itemId].uses}</p>`;
 						} else {
-							if (item.uses) {
-								output += `<p>Uses left: ${account.inventory[itemId].uses}</p>`;
-							} else {
-								output += `<p>Owned: ${account.inventory[itemId].amount}</p>`;
-							}
+							output += `<p>Owned: ${account.inventory[itemId].amount}</p>`;
 						}
 					}
 					output += `<input type="number" name="${itemId}" placeholder="0"/>`;
@@ -74,8 +57,20 @@ class Quills {
 			}
 			if (userid) output += `<p><input type="submit" value="Purchase"></p>`;
 			output += `</form>`;
-			return res.end(utils.wrapHTML('Scribe Shop', output));
-		});
+			return ['Scribe Shop', output];
+		}, {permission: 'shop', optionalToken: true, onPost: (body, tokenData) => {
+			const userid = tokenData.user;
+			try {
+				for (const key in body) {
+					let amount = parseInt(body[key]);
+					if (!isNaN(amount) && amount > 0) {
+						client.sendPM(userid, this.purchase(userid, key, amount));
+					}
+				}
+			} catch (e) {
+				client.sendPM(userid, e);
+			}
+		}});
 	}
 
 	addShopItem(id, name, price, description, uses, unique) {

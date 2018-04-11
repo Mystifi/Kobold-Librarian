@@ -14,6 +14,36 @@ const bodyParser = require('body-parser');
 const config = require('./config');
 const utils = require('./utils');
 
+// Init here so eslint doesn't complain.
+let server;
+
+class Page {
+	constructor(resolver, options = {}) {
+		this.resolver = resolver;
+		this.permission = options.permission;
+		this.onPost = options.onPost;
+		this.tokenRequired = this.permission && !options.optionalToken;
+	}
+
+	resolve(req, res) {
+		let queryData = utils.parseQueryString(req.url);
+		let tokenData = {};
+		if (queryData.token) {
+			tokenData = server.getAccessToken(queryData.token);
+			if (!(tokenData && tokenData.permission === this.permission)) return res.end(`Invalid or expired token provided. Please re-use the command to get a new, valid token.`);
+			if (req.method === "POST" && req.body) {
+				this.onPost(req.body, tokenData, queryData, res);
+			}
+		} else if (this.tokenRequired) {
+			return res.end(`Usage of this webpage requires a token. Please (re-)enter the command to get a token.`);
+		}
+
+		const [title, content] = this.resolver(req.originalUrl, queryData, tokenData, res);
+
+		return res.end(utils.wrapHTML(title, content));
+	}
+}
+
 class Server {
 	constructor(host, port) {
 		let protocol = (port === 443) ? 'https' : 'http';
@@ -52,7 +82,7 @@ class Server {
 		this._server = null;
 
 		// Load all saved pages.
-		this.pages.forEach((value, key) => this.site.use(key, value));
+		this.pages.forEach((value, key) => this.site.use(key, value.resolve.bind(value)));
 
 		// Add the middleware for redirecting any unknown requests to a 404
 		// error page here, so it can always be the last one added.
@@ -94,9 +124,10 @@ class Server {
 
 	// configures the routing for the given path using the given function,
 	// which dynamically generates the HTML to display on that path.
-	addRoute(path, resolver) {
-		this.pages.set(path, resolver);
-		this.site.use(path, resolver);
+	addRoute(path, resolver, options) {
+		const page = new Page(resolver, options);
+		this.pages.set(path, page);
+		this.site.use(path, page.resolve.bind(page));
 		this.restart();
 	}
 
@@ -162,4 +193,5 @@ class Server {
 	}
 }
 
-module.exports = new Server(config.serverhost, config.serverport);
+server = new Server(config.serverhost, config.serverport);
+module.exports = server;
