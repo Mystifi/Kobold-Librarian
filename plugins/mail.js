@@ -9,6 +9,19 @@ const config = require('../config');
 const storage = require('../storage');
 const utils = require('../utils');
 
+const MONTH = 31 * 24 * 60 * 60 * 1000;
+
+// Prune mail scheduled over a month ago.
+for (let [curUser, messages] of Object.entries(storage.getJSON('mail'))) {
+	messages = messages.filter(({time}) => Date.now() - time < MONTH);
+	if (messages) {
+		storage.getJSON('mail')[curUser] = messages;
+	} else {
+		delete storage.getJSON('mail')[curUser];
+	}
+}
+storage.exportJSON('mail');
+
 module.exports = {
 	async onJoin(userid) {
 		let inbox = storage.getJSON('mail')[userid];
