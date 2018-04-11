@@ -16,6 +16,14 @@ quills.addShopItem('bio', "Personalized Bio", 500, `A personalized bio <a href="
 
 quills.addShopItem('page', "Personal Webpage", 2500, `A personal webpage on The Scribe's site you can use for <em>anything</em>*! Personal pages use Markdown formatting.<br>* Abuse of the personal pages will lead to deletion of the page and having your purchase revoked.`, null, true);
 
+server.addRoute(`/bios.html`, () => {
+	let output = '';
+	for (let userid in storage.getJSON('bios')) {
+		output += `<h2>${userid}</h2><p>${md.toHTML(storage.getJSON('bios')[userid])}</p>`;
+	}
+	return ['Personalized Bios', output];
+});
+
 const pubResolver = (url) => {
 	const pageid = url.split('/')[2].slice(0, -5);
 	return [`${pageid[0].toUpperCase()}${pageid.slice(1)}`, md.toHTML(storage.getJSON('public-pages')[pageid])];
