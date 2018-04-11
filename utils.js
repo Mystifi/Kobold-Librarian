@@ -51,7 +51,8 @@ module.exports = {
 
 		return [Math.round(width * ratio), Math.round(height * ratio)];
 	},
-	// From Zarel/Pokemon-Showdown
+
+	// Utilies from Zarel/Pokemon-Showdown
 	plural(num, plural = 's', singular = '') {
 		if (num && typeof num.length === 'number') {
 			num = num.length;
@@ -61,6 +62,15 @@ module.exports = {
 			num = Number(num);
 		}
 		return (num !== 1 ? plural : singular);
+	},
+	toDurationString(number) {
+		// TODO: replace by Intl.DurationFormat or equivalent when it becomes available (ECMA-402)
+		// https://github.com/tc39/ecma402/issues/47
+		const date = new Date(+number);
+		const parts = [date.getUTCFullYear() - 1970, date.getUTCMonth(), date.getUTCDate() - 1, date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds()];
+		const unitNames = ["second", "minute", "hour", "day", "month", "year"];
+		const positiveIndex = parts.findIndex(elem => elem > 0);
+		return parts.slice(positiveIndex).reverse().map((value, index) => value ? `${value} ${unitNames[index]}${this.plural(value)}` : "").reverse().join(" ").trim();
 	},
 
 	// HTML-related functions used by webpages
