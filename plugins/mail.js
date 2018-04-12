@@ -41,9 +41,9 @@ module.exports = {
 			if (!(target && toSend)) return this.sendPM(userid, `Syntax: \`\`${config.commandToken}mail user, message\`\``);
 			if (toSend.length > 250) return this.sendPM(userid, `Your message is too long. (${toSend.length}/250)`);
 
-			let inbox = storage.getJSON('mail')[userid] || [];
+			let inbox = storage.getJSON('mail')[target] || [];
 			if (inbox.length >= 5) return this.sendPM(userid, `${target}'s inbox is full.`);
-			storage.getJSON('mail')[userid] = inbox.concat({sender: userid, message: toSend, time: Date.now()});
+			storage.getJSON('mail')[target] = inbox.concat({sender: userid, message: toSend, time: Date.now()});
 			storage.exportJSON('mail');
 
 			return this.send(`Mail successfully scheduled for ${target}.`);
