@@ -188,8 +188,12 @@ class Client {
 
 		let core = require('./core-commands');
 
-		for (let c in core) {
+		for (let c in core.commands) {
 			this.commands.set(c, core[c]);
+		}
+
+		for (let a in core.aliases) {
+			this.commands.set(a, core.commands[core.aliases[a]]);
 		}
 
 		fs.readdirSync('./plugins')
