@@ -1,5 +1,5 @@
 {
-        "name": "the-scribe",
+        "name": "kobold-librarian",
         "version": "0.0.1",
         "description": "An improved version of The Scribe, a PS! bot for Writing and Canalave Library.",
         "license": "MIT",
@@ -33,6 +33,6 @@
         },
         "repository": {
                 "type": "git",
-                "url": "https://github.com/Mystifi/The-Scribe.git"
+                "url": "https://github.com/Mystifi/Kobold-Librarian.git"
         }
 }

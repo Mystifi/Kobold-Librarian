@@ -6,6 +6,8 @@
 
 const probe = require('probe-image-size');
 
+const config = require('./config');
+
 module.exports = {
 	// Basic functions used across the repo.
 	leftpad(str) {
@@ -131,12 +133,12 @@ module.exports = {
 				<meta charset="UTF-8">\
 				<link rel="stylesheet" href="/style.css">\
 				<link href="https://fonts.googleapis.com/css?family=Ovo" rel="stylesheet">\
-				<title>${title} - The Scribe</title>\
+				<title>${title} - ${config.username}</title>\
 			</head>\
 			<body>\
 				<div id="container">\
 					<div id="header">\
-						<h1>${title} - The Scribe</h1>\
+						<h1>${title} - ${config.username}</h1>\
 					</div>\
 					<div id="text-area">\
 						${body}\

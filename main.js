@@ -42,7 +42,7 @@ try {
 	fs.accessSync('./config.js');
 } catch (e) {
 	if (e.code !== 'ENOENT') throw e;
-	utils.errorMsg(`No config.js file found. Please edit the example config to configure The Scribe.`);
+	utils.errorMsg(`No config.js file found. Please edit the example config to configure Kobold Librarian.`);
 	fs.writeFileSync('./config.js', fs.readFileSync('./config-example.js'));
 	process.exit(0);
 }

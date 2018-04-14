@@ -1,7 +1,7 @@
 /**
  * storage.js: Data persistence.
  *
- * Modified from sirDonovan/Cassius's Storage module to best fit The Scribe's needs.
+ * Modified from sirDonovan/Cassius's Storage module to best fit the bot's needs.
  */
 
 'use strict';

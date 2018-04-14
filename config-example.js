@@ -1,5 +1,5 @@
 // Login information for the bot. Make sure the username is registered and that the password is valid.
-exports.username = 'The Scribe';
+exports.username = 'Kobold Librarian';
 exports.password = '';
 
 // The command token for commands on the bot.
@@ -21,5 +21,5 @@ exports.avatar = 61;
 // The rooms that the bot should join.
 exports.rooms = ['writing', 'canalavelibrary'];
 
-// The owners of the bot. These are displayed in the .owners command, and bypass all permission checks.
+// The owners of the bot. These are displayed in the ;owners command, and bypass all permission checks.
 exports.owners = ['mystifi', 'bumbadadabum'];

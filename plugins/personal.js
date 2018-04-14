@@ -12,9 +12,9 @@ const server = require('../server');
 const storage = require('../storage');
 const utils = require('../utils');
 
-quills.addShopItem('bio', "Personalized Bio", 500, `A personalized bio <a href="bios.html">on The Scribe's website</a>. Use <code>${config.commandToken}setbio text</code> to set your bio. Bios use Markdown formatting. Inappropriate bios will get your bio removed and purchase revoked.`, null, true);
+quills.addShopItem('bio', "Personalized Bio", 500, `A personalized bio <a href="bios.html">on The ${config.username}'s website</a>. Use <code>${config.commandToken}setbio text</code> to set your bio. Bios use Markdown formatting. Inappropriate bios will get your bio removed and purchase revoked.`, null, true);
 
-quills.addShopItem('page', "Personal Webpage", 2500, `A personal webpage on The Scribe's site you can use for <em>anything</em>*! Personal pages use Markdown formatting.<br>* Abuse of the personal pages will lead to deletion of the page and having your purchase revoked.`, null, true);
+quills.addShopItem('page', "Personal Webpage", 2500, `A personal webpage on ${config.username}'s site you can use for <em>anything</em>*! Personal pages use Markdown formatting.<br>* Abuse of the personal pages will lead to deletion of the page and having your purchase revoked.`, null, true);
 
 server.addRoute(`/bios.html`, () => {
 	let output = '';
