@@ -71,6 +71,13 @@ module.exports = {
 		return this.send(message);
 	},
 
+	async guide(userid) {
+		let message = `[[Guide to using Kobold Librarian <${server.url}guide.html>]]`;
+		if (!this.hasPerms('+')) return this.sendPM(userid, message);
+
+		return this.send(message);
+	},
+
 	// Quills commands
 
 	async shop(userid, roomid) {
