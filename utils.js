@@ -72,6 +72,56 @@ module.exports = {
 		const positiveIndex = parts.findIndex(elem => elem > 0);
 		return parts.slice(positiveIndex).reverse().map((value, index) => value ? `${value} ${unitNames[index]}${this.plural(value)}` : "").reverse().join(" ").trim();
 	},
+	levenshtein(s, t, l) {
+		// Original levenshtein distance function by James Westgate, turned out to be the fastest
+		let d = [];
+
+		// Step 1
+		let n = s.length;
+		let m = t.length;
+
+		if (n === 0) return m;
+		if (m === 0) return n;
+		if (l && Math.abs(m - n) > l) return Math.abs(m - n);
+
+		// Create an array of arrays in javascript (a descending loop is quicker)
+		for (let i = n; i >= 0; i--) d[i] = [];
+
+		// Step 2
+		for (let i = n; i >= 0; i--) d[i][0] = i;
+		for (let j = m; j >= 0; j--) d[0][j] = j;
+
+		// Step 3
+		for (let i = 1; i <= n; i++) {
+			let s_i = s.charAt(i - 1);
+
+			// Step 4
+			for (let j = 1; j <= m; j++) {
+				// Check the jagged ld total so far
+				if (i === j && d[i][j] > 4) return n;
+
+				let t_j = t.charAt(j - 1);
+				let cost = (s_i === t_j) ? 0 : 1; // Step 5
+
+				// Calculate the minimum
+				let mi = d[i - 1][j] + 1;
+				let b = d[i][j - 1] + 1;
+				let c = d[i - 1][j - 1] + cost;
+
+				if (b < mi) mi = b;
+				if (c < mi) mi = c;
+
+				d[i][j] = mi; // Step 6
+			}
+		}
+
+		// Step 7
+		return d[n][m];
+	},
+	// (Technically came from Zarel/Pokemon-Showdown-Client but shhh)
+	arrayToPhrase(array, finalSeparator = 'and') {
+		return (array.length <= 1 ? array.join() : `${array.slice(0, -1).join(", ")}, ${finalSeparator} ${array.slice(-1)[0]}`);
+	},
 
 	// HTML-related functions used by webpages
 	wrapHTML(title, body) {
