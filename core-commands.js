@@ -129,5 +129,18 @@ module.exports = {
 
 			return this.send(ret);
 		},
+		async useitem(userid, roomid, message) {
+			if (!this.hasPerms('%')) return this.sendPM(userid, `Permission denied.`);
+			let [target, itemId] = message.split(',').map(param => utils.toId(param));
+			if (!target || !itemId) return this.send('Syntax: ``.useitem username, item``');
+
+			let itemData = quills.shop.get(itemId);
+			if (!itemData) return this.send(`Invalid shop item: ${itemId}`);
+
+			const res = quills.useItem(target, itemId);
+			if (res < 0) return this.sendPM(userid, `User ${target} has no ${itemData.name}.`);
+			this.send(`${itemData.name} used on the account of ${target}.${res ? ` Uses remaining: ${res}` : ''}`);
+			this.sendPM(target, `You have used your ${itemData.name}.${res ? ` Uses remaining: ${res}` : ''}`);
+		},
 	},
 };
