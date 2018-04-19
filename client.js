@@ -16,8 +16,7 @@ const ACTION_URL = 'http://play.pokemonshowdown.com/action.php';
 const RANKS = ['+', '%', '@', '*', '#', '&', '~'];
 
 class CommandWrapper {
-	constructor(rank, send, commands, userlists) {
-		this.rank = rank;
+	constructor(send, commands, userlists) {
 		this.send = send;
 		this.commands = commands;
 		this.userlists = userlists;
@@ -31,8 +30,18 @@ class CommandWrapper {
 		this.send(`/pm ${userid}, ${message}`);
 	}
 
-	async run(commandName, userid, roomid, message) {
+	async run(commandName, rank, userid, roomid, message) {
 		if (config.owners.includes(userid)) this.rank = '~'; // There might be a more elegant way to do it. Can't think of it rn however.
+		// Get highest auth if used in PM.
+		if (!roomid) {
+			for (const room of config.rooms) {
+				if (this.userlists[room] && this.userlists[room][userid]) {
+					const roomrank = this.userlists[room][userid][0];
+					if (RANKS.indexOf(roomrank) > RANKS.indexOf(rank)) rank = roomrank;
+				}
+			}
+		}
+		this.rank = rank;
 		this.command = commandName;
 		let command = this.commands.get(commandName);
 		command.apply(this, [userid, roomid, message]).catch(e => {
@@ -230,7 +239,6 @@ class Client {
 
 	// For the moment, this only handles parsing incoming command messages.
 	async parseMessage(user, roomid, message) {
-		let rank = user[0];
 		let userid = utils.toId(user);
 		if (!message.startsWith(config.commandToken)) {
 			if (!roomid) {
@@ -260,9 +268,9 @@ class Client {
 				this.sendPM(userid, message);
 			}
 		};
-		let wrapper = new CommandWrapper(rank, send, this.commands, this.userlists);
+		let wrapper = new CommandWrapper(send, this.commands, this.userlists);
 
-		await wrapper.run(commandName, userid, roomid, words.join(' '));
+		await wrapper.run(commandName, user[0], userid, roomid, words.join(' '));
 	}
 }
 
