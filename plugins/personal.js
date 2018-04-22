@@ -39,7 +39,8 @@ server.addRoute(`/public-page.html`, (url, queryData, tokenData, res) => {
 	if (!pageid) return res.end(`Please provide a page name`);
 
 	if (!storage.getJSON('public-pages')[pageid]) server.addRoute(`/pages/${pageid}.html`, pubResolver);
-	storage.getJSON('public-pages')[pageid] = body.content;
+	const today = new Date();
+	storage.getJSON('public-pages')[pageid] = `${body.content}\n###### Last edited by: ${tokenData.user} on ${today.getDate()}/${today.getMonth() + 1}/${today.getFullYear()}`;
 	storage.exportJSON('public-pages');
 	res.writeHead(301,
 		{Location: `${server.url}pages/${pageid}.html`}
@@ -106,7 +107,7 @@ module.exports = {
 		async editpage(userid, roomid, message) {
 			message = utils.toId(message);
 			if (message) {
-				if (!this.hasPerms('#')) return this.sendPM(userid, `Editing public pages requires #. If you meant to update your own personal page, use the command without any arguments.`);
+				if (!this.hasPerms('@')) return this.sendPM(userid, `Editing public pages requires #. If you meant to update your own personal page, use the command without any arguments.`);
 
 				return this.sendPM(userid, `Edit link for /pages/${message}.html (DO NOT SHARE THIS LINK): ${server.url}public-page.html?pageid=${message}&token=${server.createAccessToken('publicpage', roomid, userid, 180)}`); // Token lasts 3 hours because people might work on their page for a while
 			}
