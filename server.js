@@ -27,7 +27,7 @@ class Page {
 
 	resolve(req, res) {
 		let queryData = utils.parseQueryString(req.url);
-		let tokenData = {};
+		let tokenData;
 		if (queryData.token) {
 			tokenData = server.getAccessToken(queryData.token);
 			if (!(tokenData && tokenData.permission === this.permission)) return res.end(`Invalid or expired token provided. Please re-use the command to get a new, valid token.`);

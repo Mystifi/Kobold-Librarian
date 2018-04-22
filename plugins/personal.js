@@ -102,7 +102,9 @@ module.exports = {
 		},
 		async page(userid, roomid, message) {
 			let target = utils.toId(message) || userid;
-			if (!quills.getAccount(target).inventory.page) return this.send(`${userid === target ? `You don't have` : `This user doesn't have`} a personal page.`);
+			if (!storage.getJSON('personal-pages')[target]) return this.send(`${userid === target ? `You don't have` : `This user doesn't have`} a personal page.`);
+
+			this.send(`${target}'s personal page: ${server.url}page.html?user=${target}`);
 		},
 		async editpage(userid, roomid, message) {
 			message = utils.toId(message);
