@@ -39,7 +39,7 @@ const dailies = {
 	},
 	wotd: {
 		name: "Word of the Day",
-		room: 'groupchat-mystifi-test',
+		room: 'writing',
 		params: ['word', 'pronunciation', 'class', 'definition', 'etymology'],
 		async renderEntry(entry) {
 			return `<span style="font-size: 30pt; color: black; display: block">${entry.word}</span>\
