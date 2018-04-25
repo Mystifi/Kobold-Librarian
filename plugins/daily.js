@@ -39,14 +39,15 @@ const dailies = {
 	},
 	wotd: {
 		name: "Word of the Day",
-		room: 'writing',
-		params: ['word', 'pronunciation', 'class', 'definition'],
+		room: 'groupchat-mystifi-test',
+		params: ['word', 'pronunciation', 'class', 'definition', 'etymology'],
 		async renderEntry(entry) {
 			return `<span style="font-size: 30pt; color: black; display: block">${entry.word}</span>\
 			<span style="font-family: sans-serif; font-size: 12pt; display: block; color: rgba(0,0,0,0.7); letter-spacing: 2px">${entry.pronunciation} / <strong style="letter-spacing: 0">${entry.class}</strong></span>\
 			<span style="font-size: 10pt; font-family: sans-serif; margin-top: 10px; display: block; color: rgba(0,0,0,0.8)">\
 				<strong style="font-family: serif; margin-right: 10px; color: rgba(0,0,0,0.5)">1.</strong>${entry.definition}\
-			</span>`;
+			</span>\
+			<span style="font-family: sans-serif ; margin-top: 10px ; display: block ; color: rgba(0, 0, 0, 0.7)">${entry.etymology}</span>`;
 		},
 	},
 	hotd: {
