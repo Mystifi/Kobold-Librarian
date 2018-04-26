@@ -76,7 +76,7 @@ async function getHTML(key, pm) {
 			<span style="display: block ; font-family: Verdana, Geneva, sans-serif ; font-size: 16pt ; font-weight: bold ; background: #6d6d6d ; padding: 3px 0 ; text-align: center ; border-radius: 2px ; color: rgba(255 , 255 , 255 , 1) ; margin-bottom: 2px">\
 				<i class="fa fa-fire" aria-hidden="true"></i> ${dailies[key].name} <i class="fa fa-fire" aria-hidden="true"></i>\
 			</span>\
-			${entryHTML}\
+			${entryHTML.replace(/\n/g, '<br/>')}\
 		</div>\
 	</div>`;
 }
