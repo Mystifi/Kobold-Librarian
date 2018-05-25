@@ -95,15 +95,15 @@ module.exports = {
 
 		// Step 3
 		for (let i = 1; i <= n; i++) {
-			let s_i = s.charAt(i - 1);
+			let sI = s.charAt(i - 1);
 
 			// Step 4
 			for (let j = 1; j <= m; j++) {
 				// Check the jagged ld total so far
 				if (i === j && d[i][j] > 4) return n;
 
-				let t_j = t.charAt(j - 1);
-				let cost = (s_i === t_j) ? 0 : 1; // Step 5
+				let tJ = t.charAt(j - 1);
+				let cost = (sI === tJ) ? 0 : 1; // Step 5
 
 				// Calculate the minimum
 				let mi = d[i - 1][j] + 1;

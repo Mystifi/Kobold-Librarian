@@ -252,7 +252,7 @@ class Client {
 
 		if (!this.commands.has(commandName)) {
 			if (!roomid) {
-				let matches = Array.from(this.commands).map(([name, f]) => name).sort((a, b) => utils.levenshtein(commandName, a) - utils.levenshtein(commandName, b));
+				let matches = Array.from(this.commands).map(([name]) => name).sort((a, b) => utils.levenshtein(commandName, a) - utils.levenshtein(commandName, b));
 				this.sendPM(userid, `Invalid command. Did you mean ${utils.arrayToPhrase(matches.slice(0, 3), 'or')}?`);
 			}
 			return;
