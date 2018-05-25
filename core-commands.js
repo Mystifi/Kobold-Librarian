@@ -102,6 +102,7 @@ module.exports = {
 			target = utils.toId(target);
 			amount = parseInt(amount);
 			if (!target || !amount || isNaN(amount)) return this.send('Syntax: ``.addquills username, amount``');
+			if (amount <= 0) return this.send(`Please enter a number greater than 0.`);
 
 			let newBalance = quills.addQuills(target, amount);
 			this.send(`Quills successfully added to the account of ${target}.`);
@@ -113,6 +114,7 @@ module.exports = {
 			target = utils.toId(target);
 			amount = parseInt(amount);
 			if (!target || !amount || isNaN(amount)) return this.send('Syntax: ``.removequills username, amount``');
+			if (amount <= 0) return this.send(`Please enter a number greater than 0.`);			
 
 			let newBalance = quills.removeQuills(target, amount);
 			this.send(`Quills successfully removed from the account of ${target}.`);
