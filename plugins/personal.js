@@ -33,7 +33,7 @@ server.addRoute(`/public-page.html`, (url, queryData, tokenData, res) => {
 	let pageid = queryData.pageid;
 	if (!pageid) return res.end(`Please provide a page name`);
 
-	return [pageid, `<form method="post"><textarea style=width:100%;" rows=50 name="content">${storage.getJSON('public-pages')[pageid].split('\n').slice(0, -1).join('\n') || ''}</textarea><input type="submit" value="Submit changes"/></form>`];
+	return [pageid, `<form method="post"><textarea style=width:100%;" rows=50 name="content">${storage.getJSON('public-pages')[pageid] ? storage.getJSON('public-pages')[pageid].split('\n').slice(0, -1).join('\n') : ''}</textarea><input type="submit" value="Submit changes"/></form>`];
 }, {permission: 'publicpage', onPost: (body, tokenData, queryData, res) => {
 	let pageid = queryData.pageid;
 	if (!pageid) return res.end(`Please provide a page name`);
