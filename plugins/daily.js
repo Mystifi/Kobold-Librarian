@@ -14,7 +14,7 @@ const client = require('../client');
 const dailies = {
 	motw: {
 		name: "Myth of the Week",
-		room: 'canalavelibrary',
+		room: 'thelibrary',
 		params: ['myth', 'image', 'description'],
 		async renderEntry(entry, pm) {
 			let imgHTML = '';
@@ -39,7 +39,7 @@ const dailies = {
 	},
 	wotd: {
 		name: "Word of the Day",
-		room: 'writing',
+		room: 'thelibrary',
 		params: ['word', 'pronunciation', 'class', 'definition', 'etymology'],
 		async renderEntry(entry) {
 			return `<span style="font-size: 30pt; color: black; display: block">${entry.word}</span>\
@@ -52,7 +52,7 @@ const dailies = {
 	},
 	hotd: {
 		name: "History of the Day",
-		room: 'canalavelibrary',
+		room: 'thelibrary',
 		params: ['title', 'date', 'location', 'description'],
 		async renderEntry(entry) {
 			return `<span style="font-size: 22pt ; display: inline-block; color: black">${entry.title}</span>\
