@@ -31,7 +31,6 @@ class CommandWrapper {
 	}
 
 	async run(commandName, rank, userid, roomid, message) {
-		if (config.owners.includes(userid)) this.rank = '~'; // There might be a more elegant way to do it. Can't think of it rn however.
 		// Get highest auth if used in PM.
 		if (!roomid) {
 			for (const room of config.rooms) {
@@ -41,7 +40,7 @@ class CommandWrapper {
 				}
 			}
 		}
-		this.rank = rank;
+		this.rank = config.owners.includes(userid) ? '~' : rank;
 		this.command = commandName;
 		let command = this.commands.get(commandName);
 		command.apply(this, [userid, roomid, message]).catch(e => {

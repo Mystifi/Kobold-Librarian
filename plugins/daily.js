@@ -19,7 +19,7 @@ const dailies = {
 	totw: {
 		name: "Theme of the Week",
 		room: ROOM,
-		params: ['title', 'subtitle', 'image', 'description'],
+		params: ['title', 'image', 'description'],
 		async renderEntry(entry, pm) {
 			let imgHTML = '';
 			if (!pm) {
@@ -35,7 +35,6 @@ const dailies = {
 					${imgHTML}\
 					<td style="padding-left:8px; vertical-align:baseline;">\
 						<div style="font-size: 22pt; margin-top: 5px; color: black;">${entry.title}</div>\
-						<div style="font-size: 12pt; margin-top: 5px; color: rgba(0, 0, 0 , 0.9)">${entry.subtitle}</div>\
 						<div style="font-size: 10pt; font-family: Verdana, Geneva, sans-serif; margin-top: 5px ; display: block ; color: rgba(0, 0, 0 , 0.8)">${md.toHTML(entry.description)}</div>\
 					</td>\
 				</tr>\
