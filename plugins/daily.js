@@ -10,11 +10,13 @@ const storage = require('../storage');
 const server = require('../server');
 const client = require('../client');
 
+const ROOM = 'thelibrary';
+
 // All the specific configuration options for each of the daily (or weekly) commands.
 const dailies = {
 	motw: {
 		name: "Myth of the Week",
-		room: 'thelibrary',
+		room: ROOM,
 		params: ['myth', 'image', 'description'],
 		async renderEntry(entry, pm) {
 			let imgHTML = '';
@@ -39,7 +41,7 @@ const dailies = {
 	},
 	wotd: {
 		name: "Word of the Day",
-		room: 'thelibrary',
+		room: ROOM,
 		params: ['word', 'pronunciation', 'class', 'definition', 'etymology'],
 		async renderEntry(entry) {
 			return `<span style="font-size: 30pt; color: black; display: block">${entry.word}</span>\
@@ -52,7 +54,7 @@ const dailies = {
 	},
 	hotd: {
 		name: "History of the Day",
-		room: 'thelibrary',
+		room: ROOM,
 		params: ['title', 'date', 'location', 'description'],
 		async renderEntry(entry) {
 			return `<span style="font-size: 22pt ; display: inline-block; color: black">${entry.title}</span>\
@@ -62,6 +64,31 @@ const dailies = {
 			<span style="font-size: 10pt ; font-family: Verdana, Geneva, sans-serif; margin-top: 5px ; display: block ; color: rgba(0, 0, 0 , 0.8)">\
 				${entry.description}\
 			</span>`;
+		},
+	},
+	totw: {
+		name: "Theme of the Week",
+		room: ROOM,
+		params: ['title', 'image', 'description', 'book', 'article'],
+		async renderEntry(entry, pm) {
+			let imgHTML = '';
+			if (!pm) {
+				const [width, height] = await utils.fitImage(entry.image, 120, 180).catch(() => {});
+				if (width && height) {
+					imgHTML = `<td>\
+						<img src="${entry.image}" width=${width} height=${height}>\
+					</td>`;
+				}
+			}
+			return `<table style="padding-top:5px;">\
+				<tr>\
+					${imgHTML}\
+					<td style="padding-left:8px; vertical-align:baseline;">\
+						<div style="font-size: 22pt ; margin-top: 5px; color: black;">${entry.title}</div>\
+						<div style="">
+					</td>\
+				</tr>\
+			</table>`;
 		},
 	},
 };
@@ -129,7 +156,7 @@ for (const key in dailies) aliases[key] = 'daily';
 module.exports = {
 	aliases: aliases,
 	commands: {
-		async daily(userid, roomid) {
+		async daily(userid, roomid, message) {
 			if (this.command !== 'daily') {
 				if (!dailies[this.command]) return; // Should never happen, but just in case.
 
@@ -139,7 +166,7 @@ module.exports = {
 				return this.send(`/addhtmlbox ${html}`);
 			}
 
-			if (!roomid) return this.send(`This command is currently not supported in PM.`);
+			if (!roomid) roomid = ROOM;
 			if (!this.hasPerms('%')) return this.send(`Permission denied.`);
 
 			return this.sendPM(userid, `${server.url}daily.html?token=${server.createAccessToken('daily', roomid, userid)}`);
