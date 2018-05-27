@@ -10,14 +10,16 @@ const storage = require('../storage');
 const server = require('../server');
 const client = require('../client');
 
+const md = require('markdown').markdown;
+
 const ROOM = 'thelibrary';
 
 // All the specific configuration options for each of the daily (or weekly) commands.
 const dailies = {
-	motw: {
-		name: "Myth of the Week",
+	totw: {
+		name: "Theme of the Week",
 		room: ROOM,
-		params: ['myth', 'image', 'description'],
+		params: ['title', 'subtitle', 'image', 'description'],
 		async renderEntry(entry, pm) {
 			let imgHTML = '';
 			if (!pm) {
@@ -32,8 +34,9 @@ const dailies = {
 				<tr>\
 					${imgHTML}\
 					<td style="padding-left:8px; vertical-align:baseline;">\
-						<div style="font-size: 22pt ; margin-top: 5px; color: black;">${entry.myth}</div>\
-						<div style="font-size: 10pt; font-family: Verdana, Geneva, sans-serif; margin-top: 5px ; display: block ; color: rgba(0, 0, 0 , 0.8)">${entry.description}</div>\
+						<div style="font-size: 22pt; margin-top: 5px; color: black;">${entry.title}</div>\
+						<div style="font-size: 12pt; margin-top: 5px; color: rgba(0, 0, 0 , 0.9)">${entry.subtitle}</div>\
+						<div style="font-size: 10pt; font-family: Verdana, Geneva, sans-serif; margin-top: 5px ; display: block ; color: rgba(0, 0, 0 , 0.8)">${md.toHTML(entry.description)}</div>\
 					</td>\
 				</tr>\
 			</table>`;
@@ -64,31 +67,6 @@ const dailies = {
 			<span style="font-size: 10pt ; font-family: Verdana, Geneva, sans-serif; margin-top: 5px ; display: block ; color: rgba(0, 0, 0 , 0.8)">\
 				${entry.description}\
 			</span>`;
-		},
-	},
-	totw: {
-		name: "Theme of the Week",
-		room: ROOM,
-		params: ['title', 'image', 'description', 'book', 'article'],
-		async renderEntry(entry, pm) {
-			let imgHTML = '';
-			if (!pm) {
-				const [width, height] = await utils.fitImage(entry.image, 120, 180).catch(() => {});
-				if (width && height) {
-					imgHTML = `<td>\
-						<img src="${entry.image}" width=${width} height=${height}>\
-					</td>`;
-				}
-			}
-			return `<table style="padding-top:5px;">\
-				<tr>\
-					${imgHTML}\
-					<td style="padding-left:8px; vertical-align:baseline;">\
-						<div style="font-size: 22pt ; margin-top: 5px; color: black;">${entry.title}</div>\
-						<div style="">
-					</td>\
-				</tr>\
-			</table>`;
 		},
 	},
 };
