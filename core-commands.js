@@ -22,6 +22,10 @@ module.exports = {
 		atm: 'balance',
 		bal: 'balance',
 		quills: 'balance',
+
+		games: 'game',
+		start: 'managegame',
+		end: 'managegame',
 	},
 	commands: {
 		// Based on the eval function in Kid A.
@@ -143,6 +147,21 @@ module.exports = {
 			if (res < 0) return this.sendPM(userid, `User ${target} has no ${itemData.name}.`);
 			this.send(`${itemData.name} used on the account of ${target}.${res ? ` Uses remaining: ${res}` : ''}`);
 			this.sendPM(target, `You have used your ${itemData.name}.${res ? ` Uses remaining: ${res}` : ''}`);
+		},
+
+		// Game commands
+
+		async game(userid, roomid, message) {
+			if (!roomid) return this.sendPM(userid, "You can't use this command in PMs.");
+			if (!this.hasPerms('+')) return this.sendPM(userid, "Permission denied.");
+			if (!message) return this.send(`List of all games: ${[...this.gameClasses.keys()].join(', ')}`);
+			this.newGame(roomid, message, {host: userid});
+		},
+		async managegame(userid, roomid) {
+			if (this.command === 'managegame') return;
+			if (!roomid) return this.sendPM(userid, "You can't use this command in PMs.");
+			if (!this.gameRooms[roomid]) return this.send(`There isn't an active game to ${this.command}.`);
+			this.gameRooms[roomid][this.command](true); // such readability | this `true` is for `GameBase#end` to know it's possibly a forced end
 		},
 	},
 };

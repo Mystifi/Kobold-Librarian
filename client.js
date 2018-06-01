@@ -16,10 +16,12 @@ const ACTION_URL = 'http://play.pokemonshowdown.com/action.php';
 const RANKS = ['+', '%', '@', '*', '#', '&', '~'];
 
 class CommandWrapper {
-	constructor(send, commands, userlists) {
+	constructor(send, commands, userlists, gameRooms, gameClasses) {
 		this.send = send;
 		this.commands = commands;
 		this.userlists = userlists;
+		this.gameRooms = gameRooms;
+		this.gameClasses = gameClasses;
 	}
 
 	hasPerms(rank) {
@@ -28,6 +30,37 @@ class CommandWrapper {
 
 	sendPM(userid, message) {
 		this.send(`/pm ${userid}, ${message}`);
+	}
+
+	// Checks `roomid` to see if the current game within it is `gameId`. You should use
+	// this if you only need to check whether or not a game exists; use CommandWrapper#findCurrentGame
+	// if you need verification AND the game object.
+	currentGame(roomid, gameId) {
+		return this.gameRooms[roomid] && this.gameRooms[roomid].nameId === gameId;
+	}
+
+	// This allows games to have PM commands by returning the game object (which is
+	// already set to the roomid itself) and the roomid in which the game is occurring
+	// if the game's ID is the same as specified.
+	findCurrentGame(gameId) {
+		if (!this.gameClasses.has(gameId)) return []; // Prevent needless searching
+		for (const roomid in this.gameRooms) {
+			if (this.gameRooms[roomid].nameId === gameId) {
+				return [this.gameRooms[roomid], roomid];
+			}
+		}
+		return [];
+	}
+
+	newGame(roomid, gameId, options) {
+		// Can't use `this.currentGame` here since that will return false if there is a game that isn't `gameId`,
+		// and we don't want multiple games running at the same time in the same room.
+		if (this.gameRooms[roomid]) return this.send(`There is already an active game of ${this.gameRooms[roomid].name}.`);
+		if (!this.gameClasses.has(gameId)) return this.send(`Invalid game. Use \`\`${config.commandToken}game\`\` to see the list of games.`);
+		if (!options.send) options.send = (message, isAnnouncement) => this.send(`${isAnnouncement ? "/wall " : ""}${message}`);
+		if (!options.sendPM) options.sendPM = this.sendPM;
+		this.gameRooms[roomid] = new (this.gameClasses.get(gameId))(roomid, options);
+		this.gameRooms[roomid].signups();
 	}
 
 	async run(commandName, rank, userid, roomid, message) {
@@ -61,6 +94,9 @@ class Client {
 		this.leaveHandlers = [];
 
 		this.commands = new Map();
+
+		this.gameRooms = {};
+		this.gameClasses = new Map();
 
 		this.client.on('connectFailed', error => {
 			this.reconnects++;
@@ -147,6 +183,11 @@ class Client {
 		case 'l':
 			delete this.userlists[roomid][utils.toId(split[2])];
 
+			if (this.gameRooms[roomid]) {
+				let game = this.gameRooms[roomid];
+				if (game.players.includes(utils.toId(split[2]))) game.userLeave(utils.toId(split[2]));
+			}
+
 			Promise.all(this.leaveHandlers.map(handler => handler.apply(this, [utils.toId(split[2]), roomid]))).catch(e => utils.errorMsg(e));
 			break;
 		case 'N':
@@ -225,6 +266,11 @@ class Client {
 						}
 					}
 				}
+				if (plugin.games) {
+					for (let id in plugin.games) {
+						this.gameClasses.set(id, plugin.games[id]);
+					}
+				}
 			});
 	}
 
@@ -236,14 +282,16 @@ class Client {
 		return this.connection.send(`|/pm ${userid}, ${message}`);
 	}
 
-	// For the moment, this only handles parsing incoming command messages.
 	async parseMessage(user, roomid, message) {
 		let userid = utils.toId(user);
 		if (!message.startsWith(config.commandToken)) {
-			if (!roomid) {
-				this.sendPM(userid, "Hi, I'm only a bot. Please PM another staff member for assistance.");
-				utils.pmMsg(`PM received from ${userid}: ${message}`);
+			if (roomid && this.gameRooms[roomid]) {
+				let game = this.gameRooms[roomid];
+				if (message.trim().toLowerCase() === "/me in") game.userJoin(userid);
+				return;
 			}
+			this.sendPM(userid, "Hi, I'm only a bot. Please PM another staff member for assistance.");
+			utils.pmMsg(`PM received from ${userid}: ${message}`);
 			return;
 		}
 		let [commandName, ...words] = message.slice(config.commandToken.length).split(' ');
@@ -267,7 +315,7 @@ class Client {
 				this.sendPM(userid, message);
 			}
 		};
-		let wrapper = new CommandWrapper(send, this.commands, this.userlists);
+		let wrapper = new CommandWrapper(send, this.commands, this.userlists, this.gameRooms, this.gameClasses);
 
 		await wrapper.run(commandName, user[0], userid, roomid, words.join(' '));
 	}
