@@ -109,8 +109,8 @@ module.exports = {
 			if (amount <= 0) return this.send(`Please enter a number greater than 0.`);
 
 			let newBalance = quills.addQuills(target, amount);
-			this.send(`Quills successfully added to the account of ${target}.`);
-			if (!roomid) this.sendPM(target, `${amount} quill${utils.plural(amount)} have been added to your account. You now have ${newBalance} quill${utils.plural(newBalance)}.`);
+			this.sendPM(userid, `Quills successfully added to the account of ${target}.`);
+			this.sendPM(target, `${amount} quill${utils.plural(amount)} have been added to your account. You now have ${newBalance} quill${utils.plural(newBalance)}.`);
 		},
 		async removequills(userid, roomid, message) {
 			if (!this.hasPerms('%')) return this.sendPM(userid, `Permission denied.`);
@@ -121,8 +121,8 @@ module.exports = {
 			if (amount <= 0) return this.send(`Please enter a number greater than 0.`);
 
 			let newBalance = quills.removeQuills(target, amount);
-			this.send(`Quills successfully removed from the account of ${target}.`);
-			if (!roomid) this.sendPM(target, `${amount} quill${utils.plural(amount)} have been removed from your account. You now have ${newBalance} quill${utils.plural(newBalance)}.`);
+			this.sendPM(userid, `Quills successfully removed from the account of ${target}.`);
+			this.sendPM(target, `${amount} quill${utils.plural(amount)} have been removed from your account. You now have ${newBalance} quill${utils.plural(newBalance)}.`);
 		},
 		async balance(userid, roomid, message) {
 			message = utils.toId(message) || userid;
