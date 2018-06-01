@@ -285,9 +285,8 @@ class Client {
 	async parseMessage(user, roomid, message) {
 		let userid = utils.toId(user);
 		if (!message.startsWith(config.commandToken)) {
-			if (roomid && this.gameRooms[roomid]) {
-				let game = this.gameRooms[roomid];
-				if (message.trim().toLowerCase() === "/me in") game.userJoin(userid);
+			if (roomid) {
+				if (this.gameRooms[roomid] && message.trim().toLowerCase() === "/me in") this.gameRooms[roomid].userJoin(userid);
 				return;
 			}
 			this.sendPM(userid, "Hi, I'm only a bot. Please PM another staff member for assistance.");
