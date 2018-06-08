@@ -16,7 +16,7 @@ const ROOM = 'thelibrary';
 
 // All the specific configuration options for each of the daily (or weekly) commands.
 const dailies = {
-	totw: {
+	prompt: {
 		name: "Writing Prompt",
 		room: ROOM,
 		params: ['title', 'image', 'description'],
