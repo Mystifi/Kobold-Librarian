@@ -133,7 +133,7 @@ for (const key in dailies) aliases[key] = 'daily';
 module.exports = {
 	aliases: aliases,
 	commands: {
-		async daily(userid, roomid, message) {
+		async daily(userid, roomid) {
 			if (this.command !== 'daily') {
 				if (!dailies[this.command]) return; // Should never happen, but just in case.
 

@@ -171,6 +171,6 @@ module.exports = {
 			if (!(message && this.userlists[roomid][message])) return this.sendPM(userid, "Invalid user.");
 			game.host = message;
 			game.send(`The game's host has been changed to **${message}**.`, true);
-		}
+		},
 	},
 };

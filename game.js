@@ -6,7 +6,6 @@
  */
 
 const config = require('./config');
-const quills = require('./quills');
 const utils = require('./utils');
 
 class GameBase {

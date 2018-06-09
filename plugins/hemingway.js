@@ -79,7 +79,7 @@ class Hemingway extends GameBase {
 		this.sendPM(userid, `Successfully passed for this round. You will be unable to submit and vote for this round.`);
 		// ideally this shouldn't happen but just in case...
 		if (this.submissions.has(userid)) this.submissions.delete(userid);
-	},
+	}
 
 	openVoting(fromCommand = false) {
 		let submissionsTable = `<b><u>Topic: ${this.roundTopic}</u></b><br/><table border=1 cellspacing=0 cellpadding=3><tr><td><b>User:</b></td><td><b>Submission:</b></td></tr>`;
@@ -116,7 +116,7 @@ class Hemingway extends GameBase {
 		if (this.timer) clearTimeout(this.timer);
 		let votes = [...this.votes.entries()].sort((a, b) => b[1] - a[1]);
 		// Account for any possible ties:
-		votes = votes.filter(([_, voteNumber]) => voteNumber === votes[0][1]);
+		votes = votes.filter(([, voteNumber]) => voteNumber === votes[0][1]);
 		if (votes.length > 1) {
 			this.ties = votes.map(([userid]) => userid);
 			this.send(`There is a tie between the following users: ${this.ties.join(', ')}. The host (${this.host}) will open up a sudden death round.`, true);
@@ -202,7 +202,7 @@ module.exports = {
 			game.roundTopic = message;
 			game.send(`The topic for the round is **${message}**! PM your submissions to me using \`\`${commandToken}submit\`\`!`, true);
 		},
-		async starttimer(userid, roomid) {
+		async starttimer(userid) {
 			let [game, gameRoom] = this.findCurrentGame(nameId);
 			if (!(game && gameRoom)) return this.sendPM(userid, `There is no current game of ${name}.`);
 			if (userid !== game.host && !this.hasPerms('%')) return this.sendPM(userid, "Permission denied.");
@@ -220,7 +220,7 @@ module.exports = {
 		},
 		async openvoting(userid, roomid) {
 			let [game, gameRoom] = this.findCurrentGame(nameId);
-			if (!(game && gameRoom)) return this.send()`There is no current game of ${name}.`);
+			if (!(game && gameRoom)) return this.send(`There is no current game of ${name}.`);
 			if (!this.hasPerms(this.command === 'submissions' ? '+' : '%')) return this.sendPM(userid, "Please ask a staff member to do this for you.");
 			// if it's going to be used in chat, make sure it's used in the proper room
 			if (roomid && roomid !== gameRoom) return this.sendPM(userid, `If you're going to use this command in a room, please use it in <<${gameRoom}>>.`);
