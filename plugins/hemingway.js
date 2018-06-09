@@ -209,7 +209,7 @@ module.exports = {
 			game.send(`A timer for two and a half minutes has started.`);
 			game.timer = setTimeout(() => {
 				let inactive = game.players.filter(player => !game.accountability.has(player));
-				if (game.submissionOpen) {
+				if (game.submissionsOpen) {
 					for (let player of inactive) game.passed.add(player);
 					game.send(`The following players have been marked inactive: ${inactive.join(', ')}.`, true);
 					game.openVoting();
