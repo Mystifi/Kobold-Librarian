@@ -31,9 +31,10 @@ class Hemingway extends GameBase {
 
 	onSignups() {
 		let announcement = `/addhtmlbox <center><b><u>General rundown of ${name}</u></b></center><ul>\
+			<li>You can join the game via typing <code>/me in</code> into the chat.${this.freeJoin ? ` Since this game is free-join, you are able to join at any time!` : ``}</li>\
 			<li>When the host, <b>${this.host}</b>, posts the topic for the first round, you will have roughly <b>2-3</b> minutes to write your submission.</li>\
-			<li>After the host says "Time's up!", you will PM me your submissions via <code>${commandToken}submit entry</code>. All submissions will be automatically posted in the chat when all players have submitted.</li>\
-			<li>When the host announces that it's time to submit your vote, you will PM me with <code>${commandToken}vote user</code>.</li>\
+			<li>After the host says "Time's up!", you will PM me your submissions via <code>${commandToken}submit [entry]</code>. All submissions will be automatically posted in the chat when all players have submitted.</li>\
+			<li>When the host announces that it's time to submit your vote, you will PM me with <code>${commandToken}vote [user]</code>.</li>\
 			<li>The winner will earn 10 quills for the round, and they will be able to PM the host the topic for the next round.</li>\
 			<li>If a tie occurs between votes, then a "sudden death" will happen between the tied players. They will have less time to write about a new topic, and only they can submit an entry. The rest of the players will vote on who the winner should be, and the winner will earn 20 quills rather than 10.</li></ul>`;
 		this.send(announcement);
@@ -54,7 +55,7 @@ class Hemingway extends GameBase {
 
 	submit(userid, message) {
 		if (!this.submissionsOpen) return this.sendPM(userid, "I'm not accepting any submissions right now.");
-		let success = this.canParticipate(userid);
+		let success = this.canParticipate('submissions', userid);
 		if (!success) return;
 		let words = message.split(' ').length;
 		if (words < 3 || words > 6) return this.sendPM(userid, "Your submission must contain anywhere from 3-6 words.");
@@ -64,7 +65,7 @@ class Hemingway extends GameBase {
 		this.accountability.add(userid);
 		this.sendPM(userid, `Your submission (${message}) has been recorded.`);
 		// If everyone has submitted, go ahead and open voting
-		if (this.allHaveSubmitted) this.openVoting();
+		if (this.allHaveSubmitted('submissions')) this.openVoting();
 	}
 
 	openVoting() {
@@ -83,7 +84,7 @@ class Hemingway extends GameBase {
 
 	vote(userid, message) {
 		if (!this.votingOpen) return this.sendPM(userid, "I'm not accepting any votes right now.");
-		let success = this.canParticipate(userid);
+		let success = this.canParticipate('voting', userid);
 		if (!success) return;
 		message = utils.toId(message);
 		if (!this.players.includes(message)) return this.sendPM(userid, "Please vote for an active participant.");
@@ -95,7 +96,7 @@ class Hemingway extends GameBase {
 		this.accountability.add(userid);
 		this.sendPM(userid, `Your vote (${message}) has been recorded.`);
 		// If everyone has voted, tally the results
-		if (this.allHaveSubmitted) this.parseVotes();
+		if (this.allHaveSubmitted('voting')) this.parseVotes();
 	}
 
 	parseVotes() {
@@ -114,11 +115,12 @@ class Hemingway extends GameBase {
 		this.setupRound();
 	}
 
-	get allHaveSubmitted() {
-		return [...this.accountability.keys()].length === this.players.length;
+	allHaveSubmitted(type) {
+		let comparator = this.ties && type === 'submissions' ? this.ties : this.players;
+		return [...this.accountability.keys()].length === comparator.length;
 	}
 
-	canParticipate(userid) {
+	canParticipate(type, userid) {
 		if (!this.players.includes(userid)) {
 			if (!this.freeJoin) {
 				this.sendPM(userid, `You can not join the game of ${name} as it has already started.`);
@@ -126,7 +128,10 @@ class Hemingway extends GameBase {
 			}
 			this.userJoin(userid);
 		}
-		if (this.ties && !this.ties.includes(userid)) return false;
+		if (this.ties && !this.ties.includes(userid) && type !== 'submissions') {
+			this.sendPM(userid, "Only tied players can participate right now.");
+			return false;
+		}
 		return true;
 	}
 
