@@ -183,6 +183,7 @@ class Client {
 		case 'l':
 			delete this.userlists[roomid][utils.toId(split[2])];
 
+			// if the user leaves while in a game, just make them leave here
 			if (this.gameRooms[roomid]) {
 				let game = this.gameRooms[roomid];
 				if (game.players.includes(utils.toId(split[2]))) game.userLeave(utils.toId(split[2]));
@@ -286,7 +287,16 @@ class Client {
 		let userid = utils.toId(user);
 		if (!message.startsWith(config.commandToken)) {
 			if (roomid) {
-				if (this.gameRooms[roomid] && message.trim().toLowerCase() === "/me in") this.gameRooms[roomid].userJoin(userid);
+				let game = this.gameRooms[roomid];
+				if (!game) return;
+				if (message.startsWith("/me ")) {
+					let meCommand = utils.toId(message.slice(4));
+					if (meCommand === "in") {
+						game.userJoin(userid);
+					} else if (meCommand === "out") {
+						game.userLeave(userid);
+					}
+				}
 				return;
 			}
 			this.sendPM(userid, "Hi, I'm only a bot. Please PM another staff member for assistance.");

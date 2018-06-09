@@ -163,5 +163,14 @@ module.exports = {
 			if (!this.gameRooms[roomid]) return this.send(`There isn't an active game to ${this.command}.`);
 			this.gameRooms[roomid][this.command](true); // such readability | this `true` is for `GameBase#end` to know it's possibly a forced end
 		},
+		async host(userid, roomid, message) {
+			let game = this.gameRooms[roomid];
+			if (!game) return this.send(`There isn't an active game.`);
+			if (userid !== game.host && !this.hasPerms('%')) return this.sendPM(userid, `Changing the current host requires room staff or being the host (${game.host}).`);
+			message = utils.toId(message);
+			if (!(message && this.userlists[roomid][message])) return this.sendPM(userid, "Invalid user.");
+			game.host = message;
+			game.send(`The game's host has been changed to **${message}**.`, true);
+		}
 	},
 };
