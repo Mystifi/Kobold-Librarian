@@ -12,19 +12,18 @@ quills.addShopItem('greeting', "Personalized Greeting", 1000, `Each time you joi
 
 module.exports = {
 	async onJoin(userid, roomid) {
-		if (storage.getJSON('greetings')[userid]) this.send(roomid, `${storage.getJSON('greetings')[userid]}, ${userid}`);
+		if (storage.getJSON('greetings')[userid]) this.send(roomid, `(${userid}) ${storage.getJSON('greetings')[userid]}`);
 	},
 	commands: {
 		async setgreeting(userid, roomid, message) {
 			if (!quills.getAccount(userid).inventory.greeting) return this.sendPM(userid, `In order to set a personal greeting, you need to purchase it in the [[Scribe Shop <${server.url}shop.html>]].`);
 			message = message.trim();
 			if (!message) return this.sendPM(userid, `Syntax: \`\`${config.commandToken}setgreeting message\`\``);
-			if (message[0] === '!' || message[0] === '/') return this.sendPM(userid, `You are not allowed to use greetings as a "clever" way to make the bot execute commands.`);
 			if (message.length > 80) return this.sendPM(`Greetings cannot exceed 80 characters.`);
 
 			storage.getJSON('greetings')[userid] = message;
 			storage.exportJSON('greetings');
-			return this.sendPM(userid, `Greeting set to: "${message}, ${userid}"`);
+			return this.sendPM(userid, `Greeting set to: "(${userid}) ${message}"`);
 		},
 		async deletegreeting(userid, roomid, message) {
 			if (!this.hasPerms('%')) return this.send(`Permission denied.`);
