@@ -105,7 +105,7 @@ module.exports = {
 			let [target, amount] = message.split(',');
 			target = utils.toId(target);
 			amount = parseInt(amount);
-			if (!target || !amount || isNaN(amount)) return this.send('Syntax: ``' + Config.commandToken + 'addquills username, amount``');
+			if (!target || !amount || isNaN(amount)) return this.send(`Syntax: \`\`${config.commandToken}addquills username, amount\`\``);
 			if (amount <= 0) return this.send(`Please enter a number greater than 0.`);
 
 			let newBalance = quills.addQuills(target, amount);
@@ -117,7 +117,7 @@ module.exports = {
 			let [target, amount] = message.split(',');
 			target = utils.toId(target);
 			amount = parseInt(amount);
-			if (!target || !amount || isNaN(amount)) return this.send('Syntax: ``' + Config.commandToken + 'removequills username, amount``');
+			if (!target || !amount || isNaN(amount)) return this.send(`Syntax: \`\`${config.commandToken}removequills username, amount\`\``);
 			if (amount <= 0) return this.send(`Please enter a number greater than 0.`);
 
 			let newBalance = quills.removeQuills(target, amount);
