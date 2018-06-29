@@ -46,6 +46,7 @@ class GameBase {
 	}
 
 	userJoin(userid) {
+		if (!userid) return; // I don't know what's causing this, so let's see if it starts here
 		if (!this.freeJoin && this.started) return this.sendPM(userid, `Sorry, you can't join the game of ${this.name}.`);
 		if (this.players.includes(userid)) return this.sendPM(userid, `You're already a player in the game of ${this.name}.`);
 		this.players.push(userid);
@@ -55,7 +56,6 @@ class GameBase {
 	}
 
 	userLeave(userid) {
-		if (this.freeJoin) return this.sendPM(userid, `You can leave a free-join game at any time; you don't have to use \`\`${config.commandToken}leave\`\`.`);
 		let playerIndex = this.players.findIndex(curUserid => curUserid === userid);
 		if (playerIndex <= 0) return this.sendPM(userid, `You're not playing the game of ${this.name}.`);
 		this.players.splice(playerIndex, 1);

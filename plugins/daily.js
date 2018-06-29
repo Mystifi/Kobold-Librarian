@@ -16,6 +16,7 @@ const ROOM = 'thelibrary';
 
 // All the specific configuration options for each of the daily (or weekly) commands.
 const dailies = {
+	// TODO(Mystifi): Change this to Fact of the Day
 	prompt: {
 		name: "Writing Prompt",
 		room: ROOM,

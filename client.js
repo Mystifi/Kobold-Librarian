@@ -108,6 +108,10 @@ class Client {
 			this.connection = connection;
 			this.reconnects = 0;
 			utils.statusMsg('WebSocket Client connected successfully.');
+			connection.on('error', e => {
+				utils.errorMsg(`Connection error: ${e.stack}`);
+				// `close` is emitted directly after `error`, so we don't need to handle reconnecting here
+			});
 			connection.on('close', () => {
 				this.reconnects++;
 				utils.errorMsg(`Connection closed. Reconnecting in ${BASE_RECONNECT_TIME ** this.reconnects} seconds.`);
@@ -130,7 +134,7 @@ class Client {
 	parse(message) {
 		if (!message) return;
 		let split = message.split('|');
-		let roomid = utils.toRoomId(split[0]);
+		let roomid = utils.toRoomId(split[0]) || 'lobby';
 
 		let userid = utils.toId(config.username);
 
@@ -177,7 +181,7 @@ class Client {
 			if (!this.userlists[roomid]) this.userlists[roomid] = {}; // failsafe, is this even needed? im paranoid and shit
 			this.userlists[roomid][utils.toId(split[2])] = [split[2][0], split[2].slice(1)];
 
-			Promise.all(this.joinHandlers.map(handler => handler.apply(this, [utils.toId(split[2]), roomid]))).catch(e => utils.errorMsg(e));
+			Promise.all(this.joinHandlers.map(handler => handler.apply(this, [utils.toId(split[2]), roomid]))).catch(e => utils.errorMsg(`Failed to parse join handler: ${e}`));
 			break;
 		case 'L':
 		case 'l':
@@ -189,7 +193,7 @@ class Client {
 				if (game.players.includes(utils.toId(split[2]))) game.userLeave(utils.toId(split[2]));
 			}
 
-			Promise.all(this.leaveHandlers.map(handler => handler.apply(this, [utils.toId(split[2]), roomid]))).catch(e => utils.errorMsg(e));
+			Promise.all(this.leaveHandlers.map(handler => handler.apply(this, [utils.toId(split[2]), roomid]))).catch(e => utils.errorMsg(`Failed to parse leave handler: ${e}`));
 			break;
 		case 'N':
 		case 'n':
@@ -214,19 +218,19 @@ class Client {
 		case 'pm':
 			if (utils.toId(split[2]) === userid) return false;
 
-			this.parseMessage(split[2], null, split.slice(4).join('|').trim()).catch(e => utils.errorMsg(e));
+			this.parseMessage(split[2], null, split.slice(4).join('|').trim()).catch(e => utils.errorMsg(`Failed to parse |pm| message: ${e}`));
 
 			break;
 		case 'c':
 			if (utils.toId(split[2]) === userid) return false;
 
-			this.parseMessage(split[2], roomid, split.slice(3).join('|').trim()).catch(e => utils.errorMsg(e));
+			this.parseMessage(split[2], roomid, split.slice(3).join('|').trim()).catch(e => utils.errorMsg(`Failed to parse |c| message: ${e}`));
 
 			break;
 		case 'c:':
 			if (utils.toId(split[3]) === userid) return false;
 
-			this.parseMessage(split[3], roomid, split.slice(4).join('|').trim()).catch(e => utils.errorMsg(e));
+			this.parseMessage(split[3], roomid, split.slice(4).join('|').trim()).catch(e => utils.errorMsg(`Failed to parse |c:| message: ${e}`));
 
 			break;
 		}
@@ -287,6 +291,7 @@ class Client {
 		let userid = utils.toId(user);
 		if (!message.startsWith(config.commandToken)) {
 			if (roomid) {
+				// Parse game joins/leaves via "/me in" or "/me out"
 				let game = this.gameRooms[roomid];
 				if (!game) return;
 				if (message.startsWith("/me ")) {
@@ -296,6 +301,16 @@ class Client {
 					} else if (meCommand === "out") {
 						game.userLeave(userid);
 					}
+				}
+				return;
+			}
+			if (message.startsWith("/invite ")) {
+				// Since subroom groupchats use the format "groupchat-MAINROOMID-NAME",
+				// we make sure that the bot is located within the main room and that the user
+				// who is inviting the bot is within the main room and has auth.
+				let toJoin = utils.toRoomId(message.slice(8));
+				if (toJoin.startsWith("groupchat-") && this.userlists[toJoin.split('-')[1]] && this.userlists[toJoin.split('-')[1]][userid] && this.userlists[toJoin.split('-')[1]][userid][0] !== ' ') {
+					this.send('', `/join ${toJoin}`);
 				}
 				return;
 			}
