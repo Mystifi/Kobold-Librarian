@@ -41,7 +41,8 @@ class Hemingway extends GameBase {
 		<p>When you have finished writing your entry, type <code>/pm ${username}, ${commandToken}submit [your submission]</code>. Voting will automatically happen when all players have submitted, and players who don't submit are marked inactive for the round.</p>\
 		<p>Alternatively, players can PM ${username} <code>${commandToken}pass</code> to skip the round. This means you will not be able to submit or vote for the round, and you can join in on the next round. <b>You cannot rejoin the round once you have passed.</b></p>\
 		<p>When all players have submitted, ${username} will post an htmlbox with all of the entries. To ensure fair voting, userids will instead be masked by numbers. You can vote for a submission by PMing ${username} <code>${commandToken}vote [number]</code>.</p>\
-		<p>Any winners are automatically announced at the end of the round, where they will be given quills. The host, <b>${this.host}</b>, will then be able to start the next round by using <code>${commandToken}topic [topic]</code>.</p></ul>`;
+		<p>Any winners are automatically announced at the end of the round, where they will be given quills. The host, <b>${this.host}</b>, will then be able to start the next round by using <code>${commandToken}topic [topic]</code>.</p>\
+		<p>At any point in the round, a Room Voice or higher or the host can use <code>;submitted</code> to see which players have not submitted or voted.</p></ul>`;
 		this.send(announcement);
 	}
 
@@ -49,15 +50,12 @@ class Hemingway extends GameBase {
 		this.send(`/addhtmlbox <b>Current players ${this.players.length}</b>: ${this.players.join(', ')}`);
 		this.submissionsOpen = true;
 		this.votingOpen = false;
+		// gotta love clearing all of this state
 		this.submissions.clear();
 		this.accountability.clear();
+		this.votes.clear();
 		this.passed.clear();
 		this.votableUsers.clear();
-		this.roundTopic = '';
-	}
-
-	notifyHost() {
-		this.sendPM(this.host, ``);
 	}
 
 	submit(userid, message) {
@@ -83,10 +81,12 @@ class Hemingway extends GameBase {
 		this.sendPM(userid, `Successfully passed. You will be unable to submit and vote until the next round.`);
 		// a user should end up passing before submitting, but just in case:
 		if (this.submissions.has(userid)) this.submissions.delete(userid);
+		// if the user who is passing is the last user who should submit, we need to actually open voting now
+		if (this.allHaveSubmitted) this.openVoting();
 	}
 
 	openVoting(fromCommand = false) {
-		let submissionsTable = `<b><u>Topic: ${this.roundTopic}</u></b><br/><br/><table border=1 cellspacing=0 cellpadding=3><tr><td><b>User:</b></td><td><b>Submission:</b></td></tr>`;
+		let submissionsTable = `<b><u>Topic: ${this.roundTopic}</u></b><br/><br/><table border=1 cellspacing=0 cellpadding=3><tr><td><b>#</b></td><td><b>Submission:</b></td></tr>`;
 		let i = 1;
 		for (let [userid, submission] of this.submissions.entries()) {
 			if (!fromCommand) this.votableUsers.set(i, userid);
@@ -98,9 +98,10 @@ class Hemingway extends GameBase {
 		if (fromCommand) return; // don't do anything else
 		if (this.timer) clearTimeout(this.timer);
 		this.accountability.clear();
-		this.send(`PM me your votes with the command \`\`${commandToken}vote [submission number]\`\`!`);
+		this.send(`You have one minute to PM me your votes with the command \`\`${commandToken}vote [submission number]\`\`!`);
 		this.submissionsOpen = false;
 		this.votingOpen = true;
+		this.timer = setTimeout(() => this.parseVotes(), 60 * 1000);
 	}
 
 	vote(userid, message) {
@@ -134,7 +135,7 @@ class Hemingway extends GameBase {
 			this.sendPM(this.host, `You can now start the next round by using \`\`${commandToken}topic [topic]\`\`. The current players will be automatically posted after setting the topic.`);
 		}
 		let [winner, number] = votes[0];
-		this.send(`**${winner}** won the round with a total of **${number}** votes! Quills have been automatically awarded.`, true);
+		this.send(`**${winner}** won the round with a total of **${number}** votes! Quills have been automatically awarded. Submission: "${this.submissions.get(winner)}"`, true);
 		this.sendPM(winner, `10 quills have been added to your account for winning the round of ${name}! You now have ${quills.addQuills(winner, 10)} quills.`);
 		this.sendPM(this.host, `You can now start the next round by using \`\`${commandToken}topic [topic]\`\`. The current players will be automatically posted after setting the topic.`);
 	}
@@ -185,8 +186,8 @@ module.exports = {
 		},
 		async topic(userid, roomid, message) {
 			let [game, gameRoom] = this.findCurrentGame(nameId);
-			if (!(game && gameRoom)) return this.send(`There is no current game of ${name}`);
-			if (userid !== game.host) return this.sendPM(userid, `Only the host, ${game.host}, can set the topic.`);
+			if (!(game && gameRoom)) return this.send(`There is no current game of ${name}.`);
+			if (userid !== game.host && !this.hasPerms('%')) return this.sendPM(userid, `Setting the topic requires room staff or being the host (${game.host}).`);
 			game.roundTopic = message;
 			game.send(`The topic for the round is **${message}**! You have two and a half minutes to write your submissions and PM them to me using \`\`${commandToken}submit [entry]\`\`!`, true);
 			game.setupRound();
@@ -198,6 +199,13 @@ module.exports = {
 					game.openVoting();
 				}
 			}, 2.5 * 60 * 1000);
+		},
+		async submitted(userid, roomid) {
+			let [game, gameRoom] = this.findCurrentGame(nameId);
+			if (!(game && gameRoom)) return this.send(`There is no current game of ${name}.`);
+			let submitted = game.players.filter(player => game.accountability.has(player));
+			if (userid !== this.host && !this.hasPerms('+')) return this.send(`Please ask either a Room Voice or above or the host (${this.host}) to use this command.`);
+			game.send(`/addhtmlbox <p><b>Users who have ${game.submissionsOpen ? 'submitted' : 'voted'}:</b> ${submitted.map(p => `<i>${p}</i>`).join(', ')}</p><p><b>Users being awaited on:</b> ${this.players.filter(p => !submitted.includes(p)).map(p => `<i>${p}</i>`).join(', ')}</p>`);
 		},
 		/* This is kept omitted so I can research if using this actually messes around whose votes are whose within the game
 		 * (this led to a user getting three votes when there were only three players, meaning they must have switched indices in order to have the player vote for themselves)
