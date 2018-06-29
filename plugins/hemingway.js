@@ -203,8 +203,8 @@ module.exports = {
 		async submitted(userid, roomid) {
 			let [game, gameRoom] = this.findCurrentGame(nameId);
 			if (!(game && gameRoom)) return this.send(`There is no current game of ${name}.`);
+			if (userid !== game.host && !this.hasPerms('+')) return this.send(`Please ask either a Room Voice or above or the host (${game.host}) to use this command.`);
 			let submitted = game.players.filter(player => game.accountability.has(player));
-			if (userid !== this.host && !this.hasPerms('+')) return this.send(`Please ask either a Room Voice or above or the host (${this.host}) to use this command.`);
 			game.send(`/addhtmlbox <p><b>Users who have ${game.submissionsOpen ? 'submitted' : 'voted'}:</b> ${submitted.map(p => `<i>${p}</i>`).join(', ')}</p><p><b>Users being awaited on:</b> ${this.players.filter(p => !submitted.includes(p)).map(p => `<i>${p}</i>`).join(', ')}</p>`);
 		},
 		/* This is kept omitted so I can research if using this actually messes around whose votes are whose within the game
