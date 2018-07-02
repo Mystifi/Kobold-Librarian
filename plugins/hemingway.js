@@ -35,7 +35,7 @@ class Hemingway extends GameBase {
 	// sent upon the creation of each game, as well as a command that can automatically retrieve the
 	// info.
 	onSignups() {
-		let announcement = `/addhtmlbox <details><summary style="text-align: center;"><b><u>Rundown of ${name}</u></b></summary>
+		let announcement = `/addhtmlbox <details><summary style="text-align: center;"><b><u>Rundown of ${name} (Click to expand)</u></b></summary>
 		<p>Anyone can join or leave the game by typing <code>/me in</code> or <code>/me out</code> respectively within the room. Since this game is free-join, you are able to join/leave at any time!</p>\
 		<p>At the beginning of each round, the host, <b>${this.host}</b>, will post the topic of the first round using <code>${commandToken}topic [topic]</code>. After the topic is announced, you'll have 2.5 minutes to write an entry.</p>\
 		<p>When you have finished writing your entry, type <code>/pm ${username}, ${commandToken}submit [your submission]</code>. Voting will automatically happen when all players have submitted, and players who don't submit are marked inactive for the round.</p>\
