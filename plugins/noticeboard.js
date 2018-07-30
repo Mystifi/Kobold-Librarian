@@ -16,13 +16,13 @@ const INTERVAL = 3 * 60 * 60 * 1000;
 server.addRoute('/noticeboard.html', () => {
 	let current = storage.getJSON('noticeboard');
 
-	return [`Library Noticeboard`, `<form method="POST"><h3>Noticeboard:</h3><textarea name="noticeboard" rows="5" cols="75">${current || ''}</textarea><br/><input type="submit" value="Submit"></form>`];
+	return [`Library Noticeboard`, `<form method="POST"><h3>Noticeboard:</h3><textarea name="noticeboard" rows="5" cols="75">${current.content || ''}</textarea><br/><input type="submit" value="Submit"></form>`];
 }, {permission: 'noticeboard', onPost: (body, tokenData) => {
 	let current = storage.getJSON('noticeboard');
 
-	if (!body.noticeboard || current === body.noticeboard) return;
+	if (!body.noticeboard || current.content === body.noticeboard) return;
 
-	current = body.noticeboard;
+	current.content = body.noticeboard;
 
 	storage.exportJSON('noticeboard');
 	client.send(ROOM, `/modnote ${tokenData.user} updated the noticeboard.`);
@@ -34,7 +34,7 @@ let timer = null;
 function sendNoticeboard() {
 	if (timer) clearTimeout(timer);
 	timer = setInterval(() => {
-		let noticeboard = md.toHTML(storage.getJSON('noticeboard'));
+		let noticeboard = md.toHTML(storage.getJSON('noticeboard').content);
 		if (!noticeboard) return;
 		client.send(ROOM, `/adduhtml noticeboard, ${noticeboard}`);
 	}, INTERVAL);
