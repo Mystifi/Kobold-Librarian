@@ -33,9 +33,10 @@ let timer = null;
 
 function sendNoticeboard() {
 	if (timer) clearTimeout(timer);
+	const noticeboard = md.toHTML(storage.getJSON('noticeboard').content);
+	if (!noticeboard) return;
+	client.send(ROOM, `/adduhtml noticeboard, ${noticeboard}`);
 	timer = setInterval(() => {
-		let noticeboard = md.toHTML(storage.getJSON('noticeboard').content);
-		if (!noticeboard) return;
 		client.send(ROOM, `/adduhtml noticeboard, ${noticeboard}`);
 	}, INTERVAL);
 }
