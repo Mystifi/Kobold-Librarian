@@ -92,6 +92,7 @@ class Client {
 		this.userlists = {};
 		this.joinHandlers = [];
 		this.leaveHandlers = [];
+		this.initHandlers = [];
 
 		this.commands = new Map();
 
@@ -214,6 +215,7 @@ class Client {
 				list[utils.toId(username)] = [username[0], username.slice(1)];
 			}
 			this.userlists[roomid] = list;
+			Promise.all(this.initHandlers.map(handler => handler.apply(this, [roomid]))).catch(e => utils.errorMsg(`Failed to parse init handler: ${e}`));
 			break;
 		case 'pm':
 			if (utils.toId(split[2]) === userid) return false;
@@ -255,6 +257,9 @@ class Client {
 			.forEach(file => {
 				let plugin = require(`./plugins/${file}`);
 
+				if (plugin.onInit) {
+					this.initHandlers.push(plugin.onInit);
+				}
 				if (plugin.onJoin) {
 					this.joinHandlers.push(plugin.onJoin);
 				}
