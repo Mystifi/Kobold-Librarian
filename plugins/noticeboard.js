@@ -33,7 +33,7 @@ let timer = null;
 
 function sendNoticeboard() {
 	if (timer) clearTimeout(timer);
-	let noticeboard = md.toHTML(storage.getJSON('noticeboard').content);
+	let noticeboard = md.toHTML(storage.getJSON('noticeboard').content.replace(/\n/g, '<br/>'));
 	if (!noticeboard) return;
 	noticeboard = `<div class='infobox'><div style="text-align:center;"><h3>Library Noticeboard:</h3>${noticeboard}</div></div>`;
 	client.send(ROOM, `/adduhtml noticeboard, ${noticeboard}`);
