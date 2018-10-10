@@ -36,7 +36,7 @@ class Quills {
 			let entries = [...this.shop.entries()];
 			entries = entries.sort((a, b) => a[1].price - b[1].price);
 			for (let [itemId, item] of entries) {
-				output += `<p><h4>${item.name}<small><code>${itemId}</code></small></h4>\
+				output += `<p><h4>${item.name} <small><code>[${itemId}]</code></small></h4>\
 					<p>Price: ${item.price} quills</p>\
 					<p>Description: <em>${item.description}</em></p>\
 					${item.uses > 0 ? `<p>Number of uses: ${item.uses}</p>`: ''}`;
