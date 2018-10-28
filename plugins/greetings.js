@@ -10,9 +10,15 @@ const utils = require('../utils');
 
 quills.addShopItem('greeting', "Personalized Greeting", 1000, `Each time you join a room with ${config.username} in it, it will send you a personalized greeting of your choice. This greeting can be set or changed at any time using <code>${config.commandToken}setgreeting message</code>. Staff have the right to revoke this purchase if the greeting is misused or abused.`, null, true);
 
+const cooldowns = new Map();
+
 module.exports = {
 	async onJoin(userid, roomid) {
-		if (storage.getJSON('greetings')[userid]) this.send(roomid, `(${userid}) ${storage.getJSON('greetings')[userid]}`);
+		if (cooldowns.has(userid)) return;
+		if (storage.getJSON('greetings')[userid]) {
+			cooldowns.set(userid, setTimeout(() => cooldowns.delete(userid), 60 * 60 * 1000))
+			this.send(roomid, `(${userid}) ${storage.getJSON('greetings')[userid]}`);
+		}
 	},
 	commands: {
 		async setgreeting(userid, roomid, message) {
