@@ -42,6 +42,31 @@ const dailies = {
 			</table>`;
 		},
 	},
+	book: {
+		name: "Book Review",
+		room: ROOM,
+		params: ['title', 'bookcover', 'review'],
+		async renderEntry(entry, pm) {
+			let imgHTML = '';
+			if (!pm) {
+				const [width, height] = await utils.fitImage(entry.bookcover, 120, 180).catch(() => {});
+				if (width && height) {
+					imgHTML = `<td>\
+						<img src="${entry.image}" width=${width} height=${height}>\
+					</td>`;
+				}
+			}
+			return `<table style="padding-top: 5px;">\
+				<tr>\
+					${imgHTML}\
+					<td style="padding-left:8px; vertical-align:baseline;">\
+						<div style="font-size: 22pt; margin-top: 5px; color: black;">${entry.title}</div>\
+						<div style="font-size: 10pt; font-family: Verdana, Geneva, sans-serif; margin-top: 5px ; display: block ; color: rgba(0, 0, 0 , 0.8)">${md.toHTML(entry.review)}</div>\
+					</td>\
+				</tr>\
+			</table>`;
+		},
+	},
 	wotd: {
 		name: "Word of the Day",
 		room: ROOM,
