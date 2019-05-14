@@ -148,6 +148,16 @@ module.exports = {
 			this.send(`${itemData.name} used on the account of ${target}.${res ? ` Uses remaining: ${res}` : ''}`);
 			this.sendPM(target, `You have used your ${itemData.name}.${res ? ` Uses remaining: ${res}` : ''}`);
 		},
+		async giveitem(userid, roomid, message) {
+			if (!this.hasPerms('%')) return this.sendPM(userid, `Permission denied.`);
+			let [target, itemId] = message.split(',');
+			let target = utils.toID(target);
+			
+			let itemData = quills.shop.get(itemId);
+			if (!itemData) return this.send(`Invalid shop item: ${itemId}`);
+			
+			this.send(quills.giveItem(target, itemId));
+		},
 
 		// Game commands
 
