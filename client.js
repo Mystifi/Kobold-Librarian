@@ -216,8 +216,9 @@ class Client {
 			break;
 		case 'init':
 			let list = {};
-			for (let username of split[6].trim().split(',').slice(1)) {
-				list[utils.toId(username)] = [username[0], username.slice(1)];
+			for (let str of split[6].trim().split(',').slice(1)) {
+				let username = str.slice(1).split('@')[0];
+				list[utils.toId(username)] = [str[0], username];
 			}
 			this.userlists[roomid] = list;
 			Promise.all(this.initHandlers.map(handler => handler.apply(this, [roomid]))).catch(e => utils.errorMsg(`Failed to parse init handler: ${e}`));
