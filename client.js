@@ -138,6 +138,7 @@ class Client {
 		let roomid = utils.toRoomId(split[0]) || 'lobby';
 
 		let userid = utils.toId(config.username);
+		let username, oldUsername;
 
 		switch (split[1]) {
 		case 'challstr':
@@ -179,31 +180,35 @@ class Client {
 			break;
 		case 'J':
 		case 'j':
+			username = split[2].slice(1).split('@')[0];
 			if (!this.userlists[roomid]) this.userlists[roomid] = {}; // failsafe, is this even needed? im paranoid and shit
-			this.userlists[roomid][utils.toId(split[2])] = [split[2][0], split[2].slice(1)];
+			this.userlists[roomid][utils.toId(username)] = [split[2][0], username];
 
-			Promise.all(this.joinHandlers.map(handler => handler.apply(this, [utils.toId(split[2]), roomid]))).catch(e => utils.errorMsg(`Failed to parse join handler: ${e}`));
+			Promise.all(this.joinHandlers.map(handler => handler.apply(this, [utils.toId(username), roomid]))).catch(e => utils.errorMsg(`Failed to parse join handler: ${e}`));
 			break;
 		case 'L':
 		case 'l':
-			delete this.userlists[roomid][utils.toId(split[2])];
+			username = split[2].slice(1).split('@')[0];
+			delete this.userlists[roomid][utils.toId(username)];
 
-			// if the user leaves while in a game, just make them leave here
+			// if the user leaves while in a game, jsplit[2].slice(1).split('@')[0]ust make them leave here
 			if (this.gameRooms[roomid]) {
 				let game = this.gameRooms[roomid];
-				if (game.players.includes(utils.toId(split[2]))) game.userLeave(utils.toId(split[2]));
+				if (game.players.includes(utils.toId(username))) game.userLeave(utils.toId(username));
 			}
 
-			Promise.all(this.leaveHandlers.map(handler => handler.apply(this, [utils.toId(split[2]), roomid]))).catch(e => utils.errorMsg(`Failed to parse leave handler: ${e}`));
+			Promise.all(this.leaveHandlers.map(handler => handler.apply(this, [utils.toId(username), roomid]))).catch(e => utils.errorMsg(`Failed to parse leave handler: ${e}`));
 			break;
 		case 'N':
 		case 'n':
+			username = split[2].slice(1).split('@')[0];
+			oldUsername = split[3].slice(1).split('@')[0];
 			if (this.userlists[roomid]) {
-				delete this.userlists[roomid][utils.toId(split[3])];
+				delete this.userlists[roomid][utils.toId(oldUsername)];
 			} else {
 				this.userlists[roomid] = {}; // paranoia again.
 			}
-			this.userlists[roomid][utils.toId(split[2])] = [split[2][0], split[2].slice(1)];
+			this.userlists[roomid][utils.toId(username)] = [split[2][0], username];
 			break;
 		case 'noinit':
 		case 'deinit':
