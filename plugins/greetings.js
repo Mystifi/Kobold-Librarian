@@ -34,10 +34,10 @@ module.exports = {
 		async deletegreeting(userid, roomid, message) {
 			if (!this.hasPerms('%')) return this.send(`Permission denied.`);
 			message = utils.toId(message);
-			if (!(quills.getAccount(message).inventory.greeting && storage.getJSON('greetings')[userid])) return this.send(`This user does not have a greeting set.`);
+			if (!(quills.getAccount(message).inventory.greeting && storage.getJSON('greetings')[message])) return this.send(`This user does not have a greeting set.`);
 
-			delete storage.getJSON('greetings')[userid];
-			quills.useItem(userid, 'greeting');
+			delete storage.getJSON('greetings')[message];
+			quills.useItem(message, 'greeting');
 			storage.exportJSON('greetings');
 			this.send(`/modnote ${message} had their greeting forcibly removed.`);
 			return this.send(`Greeting removed.`);
