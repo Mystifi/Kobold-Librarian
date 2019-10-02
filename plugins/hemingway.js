@@ -207,6 +207,15 @@ module.exports = {
 			let submitted = game.players.filter(player => game.accountability.has(player));
 			game.send(`/addhtmlbox <p><b>Users who have ${game.submissionsOpen ? 'submitted' : 'voted'}:</b> ${submitted.map(p => `<i>${p}</i>`).join(', ')}</p><p><b>Users being awaited on:</b> ${this.players.filter(p => !submitted.includes(p)).map(p => `<i>${p}</i>`).join(', ')}</p>`);
 		},
+		async check(userid, roomid, message) {
+			let [game, gameRoom] = this.findCurrentGame(nameId);
+			if (!(game && gameRoom)) return this.send(`There is no curreng game of ${name}.`);
+			if (userid !== game.host) return this.send('Only the host can use this command.');
+			if (roomid) return this.sendPM("Use this command in PMs only.");
+			message = parseInt(message.replace(/^\[([^\]]+)\]$/, (m, p1) => p1));
+			let targetUser = game.votableUsers.get(message);
+			return this.sendPM(`Submission #${message} belongs to ${targetUser}.`);
+		}
 		/* This is kept omitted so I can research if using this actually messes around whose votes are whose within the game
 		 * (this led to a user getting three votes when there were only three players, meaning they must have switched indices in order to have the player vote for themselves)
 		async openvoting(userid, roomid) {
