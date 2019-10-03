@@ -113,6 +113,27 @@ class Quills {
 		}
 		return -1;
 	}
+	
+	giveItem(userid, itemId) {
+		let account = this.getAccount(userid);
+		let item = this.shop.get(itemId);
+		if (('unique' in item) && account.inventory(userid)) return `User ${userid} cannot have more than 1 ${item.name} in their inventory at a time`;
+		let limited = item.uses;
+		if (limited) {
+			amount = itemId in account.inventory ? (item.uses - account.inventory[itemId].uses) : item.uses;
+		}
+		if (amount <= 0) return `${userid} has the maximum amount of usages for a ${item.name} (${item.uses}).`;
+		if (!(itemId in account.inventory)) account.inventory[itemId] = {};
+		let given = account.inventory[itemId];
+		if (!(limited || item.unique)) {
+			if (!('amount' in purchased)) purchased.amount = 0;
+			given.amount += amount;
+			return `Successful transaction. ${userid} now has ${purchased.amount} ${item.name}${utils.plural(purchased.amount)}.`;
+		} else if (item.uses) {
+			given.uses = item.uses;
+			return `Successful transaction. ${userid} has ${item.uses} available use${utils.plural(item.uses)} for their ${item.name}.`;
+		}
+	}
 
 	purchase(userid, itemId, amount = 1) {
 		if (!(this.shop.has(itemId))) throw(`The item "${itemId}" doesn't exist.`);
