@@ -210,11 +210,12 @@ module.exports = {
 		async check(userid, roomid, message) {
 			let [game, gameRoom] = this.findCurrentGame(nameId);
 			if (!(game && gameRoom)) return this.sendPM(userid, `There is no current game of ${name}.`);
-			if (userid !== game.host) return this.sendPM(userid, 'Only the host can use this command.');
-			if (roomid) return this.sendPM(userid, 'Use this command in PMs only.');
-			if (!game.votesOpen) return this.sendPM(userid, 'You can only use this in the voting phase.');
+			if (userid !== game.host) return this.sendPM(userid, "Only the host can use this command.");
+			if (roomid) return this.sendPM(userid, "Use this command in PMs only.");
+			if (!game.votesOpen) return this.sendPM(userid, "You can only use this in the voting phase.");
 			message = parseInt(message.replace(/^\[([^\]]+)\]$/, (m, p1) => p1));
 			let targetUser = game.votableUsers.get(message);
+			if (isNAN(targetUser) || !game.votableUsers.has(message)) return this.sendPM(userid, "Invalid user.");
 			this.sendPM(`Submission #${message} belongs to ${targetUser}.`);
 		}
 		/* This is kept omitted so I can research if using this actually messes around whose votes are whose within the game
