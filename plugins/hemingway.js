@@ -209,12 +209,13 @@ module.exports = {
 		},
 		async check(userid, roomid, message) {
 			let [game, gameRoom] = this.findCurrentGame(nameId);
-			if (!(game && gameRoom)) return this.send(`There is no curreng game of ${name}.`);
-			if (userid !== game.host) return this.send('Only the host can use this command.');
-			if (roomid) return this.sendPM("Use this command in PMs only.");
+			if (!(game && gameRoom)) return this.sendPM(userid, `There is no current game of ${name}.`);
+			if (userid !== game.host) return this.sendPM(userid, 'Only the host can use this command.');
+			if (roomid) return this.sendPM(userid, 'Use this command in PMs only.');
+			if (!game.votesOpen) return this.sendPM(userid, 'You can only use this in the voting phase.');
 			message = parseInt(message.replace(/^\[([^\]]+)\]$/, (m, p1) => p1));
 			let targetUser = game.votableUsers.get(message);
-			return this.sendPM(`Submission #${message} belongs to ${targetUser}.`);
+			this.sendPM(`Submission #${message} belongs to ${targetUser}.`);
 		}
 		/* This is kept omitted so I can research if using this actually messes around whose votes are whose within the game
 		 * (this led to a user getting three votes when there were only three players, meaning they must have switched indices in order to have the player vote for themselves)
